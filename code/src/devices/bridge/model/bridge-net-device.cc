@@ -74,7 +74,7 @@ BridgeNetDevice::~BridgeNetDevice()
 BridgeNetDevice::DoDispose ()
 {
   NS_LOG_FUNCTION_NOARGS ();
-  for (std::vector< Ptr<NetDevice> >::iterator iter = m_ports.begin (); iter != m_ports.end (); iter++)
+  for (std::vector< Ptr<BridgePortNetDevice> >::iterator iter = m_ports.begin (); iter != m_ports.end (); iter++)
     {
       *iter = 0;
     }
@@ -84,12 +84,7 @@ BridgeNetDevice::DoDispose ()
   NetDevice::DoDispose ();
 }
 
-void
-BridgeNetDevice::ReceiveFromDevice (Ptr<NetDevice> incomingPort, Ptr<const Packet> packet, uint16_t protocol,
-                                    Address const &src, Address const &dst, PacketType packetType)
-{
-  NS_LOG_FUNCTION_NOARGS ();
-  NS_LOG_DEBUG ("UID is " << packet->GetUid ());
+void BridgeNetDevice::Forward (Ptr<BridgePortNetDevice> port, Ptr<const Packet> packet, uint16_t protocol, Address const &src, Address const &dst, NetDevice::PacketType packetType){
 
   Mac48Address src48 = Mac48Address::ConvertFrom (src);
   Mac48Address dst48 = Mac48Address::ConvertFrom (dst);
@@ -111,7 +106,7 @@ BridgeNetDevice::ReceiveFromDevice (Ptr<NetDevice> incomingPort, Ptr<const Packe
     case PACKET_BROADCAST:
     case PACKET_MULTICAST:
       m_rxCallback (this, packet, protocol, src);
-      ForwardBroadcast (incomingPort, packet, protocol, src48, dst48);
+      ForwardBroadcast (port, packet, protocol, src48, dst48);
       break;
 
     case PACKET_OTHERHOST:
@@ -121,84 +116,73 @@ BridgeNetDevice::ReceiveFromDevice (Ptr<NetDevice> incomingPort, Ptr<const Packe
         }
       else
         {
-          ForwardUnicast (incomingPort, packet, protocol, src48, dst48);
+          ForwardUnicast (port, packet, protocol, src48, dst48);
         }
       break;
     }
 }
 
 void
-BridgeNetDevice::ForwardUnicast (Ptr<NetDevice> incomingPort, Ptr<const Packet> packet,
-                                 uint16_t protocol, Mac48Address src, Mac48Address dst)
+BridgeNetDevice::ForwardUnicast (Ptr<BridgePortNetDevice> incomingPort, Ptr<const Packet> packet, uint16_t protocol, Mac48Address src, Mac48Address dst)
 {
   NS_LOG_FUNCTION_NOARGS ();
-  NS_LOG_DEBUG ("LearningBridgeForward (incomingPort=" << incomingPort->GetInstanceTypeId ().GetName ()
-                << ", packet=" << packet << ", protocol="<<protocol
-                << ", src=" << src << ", dst=" << dst << ")");
 
-  Learn (src, incomingPort);
-  Ptr<NetDevice> outPort = GetLearnedState (dst);
+  Ptr<BridgePortNetDevice> outPort = GetLearnedState (dst);
   if (outPort != NULL && outPort != incomingPort)
     {
       NS_LOG_LOGIC ("Learning bridge state says to use port `" << outPort->GetInstanceTypeId ().GetName () << "'");
-      outPort->SendFrom (packet->Copy (), src, dst, protocol);
+      outPort->Send (packet->Copy (), src, dst, protocol);
     }
   else
     {
       NS_LOG_LOGIC ("No learned state: send through all ports");
-      for (std::vector< Ptr<NetDevice> >::iterator iter = m_ports.begin ();
+      for (std::vector< Ptr<BridgePortNetDevice> >::iterator iter = m_ports.begin ();
            iter != m_ports.end (); iter++)
         {
-          Ptr<NetDevice> port = *iter;
+          Ptr<BridgePortNetDevice> port = *iter;
           if (port != incomingPort)
             {
               NS_LOG_LOGIC ("LearningBridgeForward (" << src << " => " << dst << "): " 
                             << incomingPort->GetInstanceTypeId ().GetName ()
                             << " --> " << port->GetInstanceTypeId ().GetName ()
                             << " (UID " << packet->GetUid () << ").");
-              port->SendFrom (packet->Copy (), src, dst, protocol);
+              port->Send (packet->Copy (), src, dst, protocol);
             }
         }
     }
 }
 
 void
-BridgeNetDevice::ForwardBroadcast (Ptr<NetDevice> incomingPort, Ptr<const Packet> packet,
-                                        uint16_t protocol, Mac48Address src, Mac48Address dst)
+BridgeNetDevice::ForwardBroadcast (Ptr<BridgePortNetDevice> incomingPort, Ptr<const Packet> packet, uint16_t protocol, Mac48Address src, Mac48Address dst)
 {
   NS_LOG_FUNCTION_NOARGS ();
-  NS_LOG_DEBUG ("LearningBridgeForward (incomingPort=" << incomingPort->GetInstanceTypeId ().GetName ()
-                << ", packet=" << packet << ", protocol="<<protocol
-                << ", src=" << src << ", dst=" << dst << ")");
-  Learn (src, incomingPort);
 
-  for (std::vector< Ptr<NetDevice> >::iterator iter = m_ports.begin ();
+  for (std::vector< Ptr<BridgePortNetDevice> >::iterator iter = m_ports.begin ();
          iter != m_ports.end (); iter++)
     {
-      Ptr<NetDevice> port = *iter;
+      Ptr<BridgePortNetDevice> port = *iter;
       if (port != incomingPort)
         {
-          NS_LOG_LOGIC ("LearningBridgeForward (" << src << " => " << dst << "): " 
-                        << incomingPort->GetInstanceTypeId ().GetName ()
-                        << " --> " << port->GetInstanceTypeId ().GetName ()
-                        << " (UID " << packet->GetUid () << ").");
-          port->SendFrom (packet->Copy (), src, dst, protocol);
+          port->Send(packet->Copy (), src, dst, protocol);
         }
     }
 }
 
-void BridgeNetDevice::Learn (Mac48Address source, Ptr<NetDevice> port)
+void BridgeNetDevice::Learn (Address const &src, Ptr<BridgePortNetDevice> port)
 {
   NS_LOG_FUNCTION_NOARGS ();
+
+  Mac48Address src48 = Mac48Address::ConvertFrom (src);
+
   if (m_enableLearning)
     {
-      LearnedState &state = m_learnState[source];
+      LearnedState &state = m_learnState[src48];
       state.associatedPort = port;
       state.expirationTime = Simulator::Now () + m_expirationTime;
     }
 }
 
-Ptr<NetDevice> BridgeNetDevice::GetLearnedState (Mac48Address source)
+Ptr<BridgePortNetDevice> BridgeNetDevice::GetLearnedState (Mac48Address source)
 {
   NS_LOG_FUNCTION_NOARGS ();
   if (m_enableLearning)
@@ -229,37 +213,32 @@ BridgeNetDevice::GetNBridgePorts (void) const
   return m_ports.size ();
 }
 
+/** Dislike this. */
 
 Ptr<NetDevice>
 BridgeNetDevice::GetBridgePort (uint32_t n) const
 {
   NS_LOG_FUNCTION_NOARGS ();
-  return m_ports[n];
+  return m_ports[n]->m_device;
 }
 
 void 
-BridgeNetDevice::AddBridgePort (Ptr<NetDevice> bridgePort)
+BridgeNetDevice::AddBridgePort (Ptr<NetDevice> device)
 {
   NS_LOG_FUNCTION_NOARGS ();
-  NS_ASSERT (bridgePort != this);
-  if (!Mac48Address::IsMatchingType (bridgePort->GetAddress ()))
-    {
-      NS_FATAL_ERROR ("Device does not support eui 48 addresses: cannot be added to bridge.");
-    }
-  if (!bridgePort->SupportsSendFrom ())
-    {
-      NS_FATAL_ERROR ("Device does not support SendFrom: cannot be added to bridge.");
-    }
+  NS_ASSERT (device != this);
+
+// This is probably wrong and needs fixing.
   if (m_address == Mac48Address ())
     {
-      m_address = Mac48Address::ConvertFrom (bridgePort->GetAddress ());
+      m_address = Mac48Address::ConvertFrom (device->GetAddress ());
     }
 
-  NS_LOG_DEBUG ("RegisterProtocolHandler for " << bridgePort->GetInstanceTypeId ().GetName ());
-  m_node->RegisterProtocolHandler (MakeCallback (&BridgeNetDevice::ReceiveFromDevice, this),
-                                   0, bridgePort, true);
-  m_ports.push_back (bridgePort);
-  m_channel->AddChannel (bridgePort->GetChannel ());
+  Ptr<BridgePortNetDevice> port = CreateObject<BridgePortNetDevice>(this, device, m_node);
+
+  m_ports.push_back(port);
+  m_channel->AddChannel (device->GetChannel ());
+
 }
 
 void 
@@ -388,21 +367,21 @@ BridgeNetDevice::SendFrom (Ptr<Packet> packet, const Address& src, const Address
   // try to use the learned state if data is unicast
   if (!dst.IsGroup ())
     {
-      Ptr<NetDevice> outPort = GetLearnedState (dst);
+      Ptr<BridgePortNetDevice> outPort = GetLearnedState (dst);
       if (outPort != NULL) 
         {
-          outPort->SendFrom (packet, src, dest, protocolNumber);
+          outPort->Send(packet, src, dest, protocolNumber);
           return true;
         }
     }
 
   // data was not unicast or no state has been learned for that mac
   // address => flood through all ports.
-  for (std::vector< Ptr<NetDevice> >::iterator iter = m_ports.begin ();
+  for (std::vector< Ptr<BridgePortNetDevice> >::iterator iter = m_ports.begin ();
        iter != m_ports.end (); iter++)
     {
-      Ptr<NetDevice> port = *iter;
-      port->SendFrom (packet, src, dest, protocolNumber);
+      Ptr<BridgePortNetDevice> port = *iter;
+      port->Send (packet, src, dest, protocolNumber);
     }
 
   return true;

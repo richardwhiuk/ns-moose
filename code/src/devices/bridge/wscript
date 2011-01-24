@@ -4,6 +4,7 @@ def build(bld):
     obj = bld.create_ns3_module('bridge', ['node'])
     obj.source = [
         'model/bridge-net-device.cc',
+        'model/bridge-port-net-device.cc',
         'model/bridge-channel.cc',
         'helper/bridge-helper.cc',
         ]
@@ -11,6 +12,7 @@ def build(bld):
     headers.module = 'bridge'
     headers.source = [
         'model/bridge-net-device.h',
+	'model/bridge-port-net-device.h',
         'model/bridge-channel.h',
         'helper/bridge-helper.h',
         ]

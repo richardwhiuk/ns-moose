@@ -14,10 +14,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Author: Gustavo Carneiro  <gjc@inescporto.pt>
+ * Author: Richard Whitehouse <ns3@richardwhiuk.com>
  */
 #ifndef BRIDGE_NET_DEVICE_H
 #define BRIDGE_NET_DEVICE_H
 
+#include "bridge-port-net-device.h"
 #include "ns3/net-device.h"
 #include "ns3/mac48-address.h"
 #include "ns3/nstime.h"
@@ -118,14 +120,11 @@ public:
 protected:
   virtual void DoDispose (void);
 
-  void ReceiveFromDevice (Ptr<NetDevice> device, Ptr<const Packet> packet, uint16_t protocol,
-                          Address const &source, Address const &destination, PacketType packetType);
-  void ForwardUnicast (Ptr<NetDevice> incomingPort, Ptr<const Packet> packet,
-                       uint16_t protocol, Mac48Address src, Mac48Address dst);
-  void ForwardBroadcast (Ptr<NetDevice> incomingPort, Ptr<const Packet> packet,
-                         uint16_t protocol, Mac48Address src, Mac48Address dst);
-  void Learn (Mac48Address source, Ptr<NetDevice> port);
-  Ptr<NetDevice> GetLearnedState (Mac48Address source);
+  void Forward (Ptr<BridgePortNetDevice> port, Ptr<const Packet> packet, uint16_t protocol, Address const &src, Address const &dst, PacketType packetType);
+  void ForwardUnicast (Ptr<BridgePortNetDevice> incomingPort, Ptr<const Packet> packet, uint16_t protocol, Mac48Address src, Mac48Address dst);
+  void ForwardBroadcast (Ptr<BridgePortNetDevice> incomingPort, Ptr<const Packet> packet, uint16_t protocol, Mac48Address src, Mac48Address dst);
+  void Learn (Address const &src, Ptr<BridgePortNetDevice> port);
+  Ptr<BridgePortNetDevice> GetLearnedState (Mac48Address source);
 
 private:
   NetDevice::ReceiveCallback m_rxCallback;
@@ -135,16 +134,22 @@ private:
   Time m_expirationTime; // time it takes for learned MAC state to expire
   struct LearnedState
   {
-    Ptr<NetDevice> associatedPort;
+    Ptr<BridgePortNetDevice> associatedPort;
     Time expirationTime;
   };
   std::map<Mac48Address, LearnedState> m_learnState;
   Ptr<Node> m_node;
   Ptr<BridgeChannel> m_channel;
-  std::vector< Ptr<NetDevice> > m_ports;
+
+  std::vector<Ptr<BridgePortNetDevice> > m_ports;
+
+  uint16_t mPortNumber;
   uint32_t m_ifIndex;
   uint16_t m_mtu;
   bool m_enableLearning;
+
+  friend class BridgePortNetDevice;
+
 };
 
 } // namespace ns3
