@@ -5,6 +5,9 @@ def build(bld):
     node.source = [
         'address.cc',
         'mac48-address.cc',
+        'moose-address.cc',
+        'moose-prefix-address.cc',
+        'moose-suffix-address.cc',
         'mac64-address.cc',
         'inet-socket-address.cc',
         'packet-socket-address.cc',
@@ -60,6 +63,9 @@ def build(bld):
     headers.source = [
         'address.h',
         'mac48-address.h',
+        'moose-address.h',
+        'moose-prefix-address.h',
+        'moose-suffix-address.h',
         'mac64-address.h',
         'inet-socket-address.h',
         'packet-socket-address.h',

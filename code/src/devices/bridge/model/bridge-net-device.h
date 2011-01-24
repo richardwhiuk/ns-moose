@@ -24,6 +24,7 @@
 #include "ns3/mac48-address.h"
 #include "ns3/nstime.h"
 #include "ns3/bridge-channel.h"
+#include "ns3/object-factory.h"
 #include <stdint.h>
 #include <string>
 #include <map>
@@ -120,11 +121,13 @@ public:
 protected:
   virtual void DoDispose (void);
 
-  void Forward (Ptr<BridgePortNetDevice> port, Ptr<const Packet> packet, uint16_t protocol, Address const &src, Address const &dst, PacketType packetType);
-  void ForwardUnicast (Ptr<BridgePortNetDevice> incomingPort, Ptr<const Packet> packet, uint16_t protocol, Mac48Address src, Mac48Address dst);
-  void ForwardBroadcast (Ptr<BridgePortNetDevice> incomingPort, Ptr<const Packet> packet, uint16_t protocol, Mac48Address src, Mac48Address dst);
-  void Learn (Address const &src, Ptr<BridgePortNetDevice> port);
-  Ptr<BridgePortNetDevice> GetLearnedState (Mac48Address source);
+  virtual void Forward (Ptr<BridgePortNetDevice> port, Ptr<const Packet> packet, uint16_t protocol, Address const &src, Address const &dst, PacketType packetType);
+  virtual void ForwardUnicast (Ptr<BridgePortNetDevice> incomingPort, Ptr<const Packet> packet, uint16_t protocol, Mac48Address src, Mac48Address dst);
+  virtual void ForwardBroadcast (Ptr<BridgePortNetDevice> incomingPort, Ptr<const Packet> packet, uint16_t protocol, Mac48Address src, Mac48Address dst);
+  virtual void Learn (Address const &src, Ptr<BridgePortNetDevice> port);
+  virtual Ptr<BridgePortNetDevice> GetLearnedState (Mac48Address source);
+
+  virtual Ptr<BridgePortNetDevice> CreateBridgePort(Ptr<BridgeNetDevice> bridge, Ptr<NetDevice> device, Ptr<Node> node);
 
 private:
   NetDevice::ReceiveCallback m_rxCallback;

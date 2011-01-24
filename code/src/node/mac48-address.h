@@ -125,6 +125,7 @@ public:
    * \returns a multicast address.
    */
   static Mac48Address GetMulticast6Prefix (void);
+
 private:
   /**
    * \returns a new Address instance

@@ -15,11 +15,15 @@
  *
  * Author: Richard Whitehouse <ns3@richardwhiuk.com>
  */
-#ifndef BRIDGE_PORT_NET_DEVICE_H
-#define BRIDGE_PORT_NET_DEVICE_H
+#ifndef MOOSE_BRIDGE_PORT_NET_DEVICE_H
+#define MOOSE_BRIDGE_PORT_NET_DEVICE_H
 
+#include "bridge-port-net-device.h"
 #include "ns3/net-device.h"
 #include "ns3/mac48-address.h"
+#include "ns3/moose-address.h"
+#include "ns3/moose-prefix-address.h"
+#include "ns3/moose-suffix-address.h"
 #include "ns3/nstime.h"
 #include <stdint.h>
 #include <string>
@@ -35,27 +39,16 @@ class BridgeNetDevice;
  * \brief a port on a virtual net device that bridges multiple LAN segments
  */
 
-class BridgePortNetDevice : public Object {
+class MooseBridgePortNetDevice : public BridgePortNetDevice  {
 
 public:
-  BridgePortNetDevice(Ptr<BridgeNetDevice> bridge, Ptr<NetDevice> device, Ptr<Node> node);
-  virtual ~BridgePortNetDevice();
+  MooseBridgePortNetDevice(Ptr<BridgeNetDevice> bridge, Ptr<NetDevice> device, Ptr<Node> node);
+  virtual ~MooseBridgePortNetDevice();
 
   static TypeId GetTypeId (void);
 
-protected:
-  void Send (Ptr<Packet> packet, const Address& src, const Address& dest, uint16_t protocolNumber);
-  void Receive (Ptr<NetDevice> device, Ptr<const Packet> packet, uint16_t protocol, Address const &source, Address const &destination, NetDevice::PacketType packetType);
-     
-private:
-  Ptr<BridgeNetDevice> m_bridge;
-  Ptr<NetDevice> m_device;
-
-
-  friend class BridgeNetDevice;
-
 };
 
-} // namespace ns3
+}
 
-#endif /* BRIDGE_PORT_NET_DEVICE_H */
+#endif

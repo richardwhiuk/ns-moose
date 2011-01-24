@@ -13,6 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
+ * Author: Richard Whitehouse <ns3@richardwhiuk.com>
  * Author: Gustavo Carneiro  <gjc@inescporto.pt>
  */
 #include "bridge-net-device.h"
@@ -228,17 +229,24 @@ BridgeNetDevice::AddBridgePort (Ptr<NetDevice> device)
   NS_LOG_FUNCTION_NOARGS ();
   NS_ASSERT (device != this);
 
-// This is probably wrong and needs fixing.
+
+  NS_LOG_DEBUG("AddBridgePort(bridge_addr=" << m_address << ", device_address=" << (Mac48Address::ConvertFrom(device->GetAddress())));
+
   if (m_address == Mac48Address ())
     {
       m_address = Mac48Address::ConvertFrom (device->GetAddress ());
     }
 
-  Ptr<BridgePortNetDevice> port = CreateObject<BridgePortNetDevice>(this, device, m_node);
+  Ptr<BridgePortNetDevice> port = CreateBridgePort(this, device, m_node);
 
   m_ports.push_back(port);
   m_channel->AddChannel (device->GetChannel ());
 
+}
+
+Ptr<BridgePortNetDevice>
+BridgeNetDevice::CreateBridgePort(Ptr<BridgeNetDevice> bridge, Ptr<NetDevice> device, Ptr<Node> node){
+	return CreateObject<BridgePortNetDevice>(bridge, device, node);
 }
 
 void 
