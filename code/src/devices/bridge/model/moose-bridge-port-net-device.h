@@ -45,6 +45,9 @@ public:
   MooseBridgePortNetDevice(Ptr<BridgeNetDevice> bridge, Ptr<NetDevice> device, Ptr<Node> node);
   virtual ~MooseBridgePortNetDevice();
 
+  virtual void Send (Ptr<Packet> packet, const Address& src, const Address& dest, uint16_t protocolNumber);
+  virtual void Receive (Ptr<NetDevice> device, Ptr<const Packet> packet, uint16_t protocol, Address const &source, Address const &destination, NetDevice::PacketType packetType);
+
   static TypeId GetTypeId (void);
 
 };
@@ -52,3 +55,4 @@ public:
 }
 
 #endif
+

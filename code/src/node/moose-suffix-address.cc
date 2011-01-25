@@ -30,6 +30,12 @@ MooseSuffixAddress::MooseSuffixAddress(const uint8_t buffer[3]){
   memcpy(m_address, buffer, 3);
 }
 
-
+uint32_t MooseSuffixAddress::GetInt() const {
+  uint32_t val = 0;
+  val = m_address[0];
+  val += m_address[1] << 8;
+  val += m_address[2] << 16;
+  return val;
+}
 
 }

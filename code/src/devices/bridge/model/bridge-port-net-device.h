@@ -43,16 +43,15 @@ public:
 
   static TypeId GetTypeId (void);
 
+  Ptr<NetDevice> GetDevice();
+
+  virtual void Send (Ptr<Packet> packet, const Address& src, const Address& dest, uint16_t protocolNumber);
+
 protected:
-  void Send (Ptr<Packet> packet, const Address& src, const Address& dest, uint16_t protocolNumber);
-  void Receive (Ptr<NetDevice> device, Ptr<const Packet> packet, uint16_t protocol, Address const &source, Address const &destination, NetDevice::PacketType packetType);
-     
-private:
+  virtual void Receive (Ptr<NetDevice> device, Ptr<const Packet> packet, uint16_t protocol, Address const &source, Address const &destination, NetDevice::PacketType packetType);
+  
   Ptr<BridgeNetDevice> m_bridge;
   Ptr<NetDevice> m_device;
-
-
-  friend class BridgeNetDevice;
 
 };
 

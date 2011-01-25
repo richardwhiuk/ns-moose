@@ -118,13 +118,14 @@ public:
   virtual bool SupportsSendFrom () const;
   virtual Address GetMulticast (Ipv6Address addr) const;
 
+  virtual void Forward (Ptr<BridgePortNetDevice> port, Ptr<const Packet> packet, uint16_t protocol, Address const &src, Address const &dst, PacketType packetType);
+  virtual void Learn (Address const &src, Ptr<BridgePortNetDevice> port);
+
 protected:
   virtual void DoDispose (void);
 
-  virtual void Forward (Ptr<BridgePortNetDevice> port, Ptr<const Packet> packet, uint16_t protocol, Address const &src, Address const &dst, PacketType packetType);
   virtual void ForwardUnicast (Ptr<BridgePortNetDevice> incomingPort, Ptr<const Packet> packet, uint16_t protocol, Mac48Address src, Mac48Address dst);
   virtual void ForwardBroadcast (Ptr<BridgePortNetDevice> incomingPort, Ptr<const Packet> packet, uint16_t protocol, Mac48Address src, Mac48Address dst);
-  virtual void Learn (Address const &src, Ptr<BridgePortNetDevice> port);
   virtual Ptr<BridgePortNetDevice> GetLearnedState (Mac48Address source);
 
   virtual Ptr<BridgePortNetDevice> CreateBridgePort(Ptr<BridgeNetDevice> bridge, Ptr<NetDevice> device, Ptr<Node> node);
@@ -150,8 +151,6 @@ private:
   uint32_t m_ifIndex;
   uint16_t m_mtu;
   bool m_enableLearning;
-
-  friend class BridgePortNetDevice;
 
 };
 

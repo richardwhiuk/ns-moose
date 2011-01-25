@@ -57,9 +57,15 @@ const Mac48Address MooseAddress::GetMacAddress() const
    return mac;
 }
 
-bool MooseAddress::IsMoose () const
+MooseAddress::MooseType MooseAddress::GetMooseType () const
 {
-  return (m_address[0] & 0x02) == 0x02;
+  if((m_address[0] & 0x01) == 0x01){
+	return GROUP;
+  } else if((m_address[0] & 0x02) == 0x02){
+	return MOOSE;
+  } else {
+        return HOST;
+  }
 }
 
 MooseAddress MooseAddress::Allocate()
@@ -82,7 +88,7 @@ MooseAddress MooseAddress::Allocate(MoosePrefixAddress prefix){
 
   uint16_t key = prefix.GetInt();
 
-  uint16_t val = ++ids[key];
+  uint32_t val = ++ids[key];
 
   MooseAddress moose;
   moose.m_address[0] = 0 | 0x02;			// MOOSE Address
@@ -97,6 +103,27 @@ MooseAddress MooseAddress::Allocate(MoosePrefixAddress prefix){
   return moose;
 
 }
+
+MooseAddress MooseAddress::Combine(MoosePrefixAddress prefix, MooseSuffixAddress suffix){
+
+  uint16_t key = prefix.GetInt();
+  uint32_t val = suffix.GetInt();
+
+  MooseAddress moose;
+
+  moose.m_address[0] = 0 | 0x02;                        // MOOSE Address
+
+  moose.m_address[1] = (key >>  8) & 0xff;              // Bridge
+  moose.m_address[2] = (key >>  0) & 0xff;
+
+  moose.m_address[3] = (val >> 16) & 0xff;              // Port
+  moose.m_address[4] = (val >>  8) & 0xff;
+  moose.m_address[5] = (val >>  0) & 0xff;
+
+  return moose;
+
+}
+
 
 }
 

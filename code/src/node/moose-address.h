@@ -42,11 +42,17 @@ public:
   MooseAddress (const char *str);
   MooseAddress (const Mac48Address &mac);
 
+  enum MooseType {
+     MOOSE,
+     HOST,
+     GROUP
+  };
+
   /**
-   * \returns true if this is a MOOSE address, false otherwise.
+   * \returns the MooseType of this address. 
    */
 
-  bool IsMoose() const;
+  MooseType GetMooseType() const;
 
   /**
    * \returns the MOOSE prefix
@@ -75,6 +81,12 @@ public:
    * Allocate a new Moose Host Address.
    */
   static MooseAddress Allocate (MoosePrefixAddress prefix);
+
+  /**
+   * Form a Moose Address from Parts.
+   */
+
+  static MooseAddress Combine (MoosePrefixAddress prefix, MooseSuffixAddress suffix);
 
 private:
 

@@ -68,6 +68,10 @@ void BridgePortNetDevice::Send(Ptr<Packet> packet, const Address& source, const 
 	m_device->SendFrom(packet->Copy(), source, dest, protocolNumber);
 }
 
+Ptr<NetDevice> BridgePortNetDevice::GetDevice(){
+   return m_device;
+}
+
 /**
  * By moving learning to the port, we can have some ports which learn, and some which don't.
  **/

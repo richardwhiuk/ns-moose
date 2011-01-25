@@ -39,7 +39,15 @@ public:
   MooseBridgeNetDevice ();
   virtual ~MooseBridgeNetDevice ();
 
+  void Learn(MooseAddress const& addr, Ptr<BridgePortNetDevice> port);
+  Ptr<BridgePortNetDevice> GetLearnedPort(MooseAddress const& addr);
+  MooseAddress ToMoose(MooseAddress const& addr);
+  MooseAddress FromMoose(MooseAddress const& addr);
+
+
 protected:
+
+  virtual void ForwardUnicast (Ptr<BridgePortNetDevice> incomingPort, Ptr<const Packet> packet, uint16_t protocol, Mac48Address src, Mac48Address dst);
 
 // From NetDevice
 
@@ -53,7 +61,6 @@ protected:
 /*
 
   virtual void Forward (Ptr<BridgePortNetDevice> port, Ptr<const Packet> packet, uint16_t protocol, Address const &src, Address const &dst, PacketType packetType);
-  virtual void ForwardUnicast (Ptr<BridgePortNetDevice> incomingPort, Ptr<const Packet> packet, uint16_t protocol, Mac48Address src, Mac48Address dst);
   virtual void ForwardBroadcast (Ptr<BridgePortNetDevice> incomingPort, Ptr<const Packet> packet, uint16_t protocol, Mac48Address src, Mac48Address dst);
   virtual void Learn (Address const &src, Ptr<BridgePortNetDevice> port);
   virtual Ptr<BridgePortNetDevice> GetLearnedState (Mac48Address source); */
@@ -64,18 +71,6 @@ private:
 
 // Need more types of state
 
-/**
-  Local Port Mappings
-	-- Implemented in parent.
-
-  struct LearnedState
-  {
-    Ptr<BridgePortNetDevice> associatedPort;
-    Time expirationTime;
-  };
-  std::map<Mac48Address, LearnedState> m_learnState;
-**/
-
   MooseAddress m_mooseAddress;
 
   // Remote Moose State
@@ -84,17 +79,29 @@ private:
   {
     Ptr<BridgePortNetDevice> associatedPort;
     Time expirationTime;
-  };
-  std::map<MoosePrefixAddress, PrefixState> m_remoteState;
+  };  
 
   // Local Moose State
 
   struct SuffixState
   {
-    Mac48Address ethernetAddr;
+    Mac48Address ethernet;
+    MooseSuffixAddress suffix;
+    Time expirationTime;
+  };  
+
+  struct PortState 
+  {
+    Ptr<BridgePortNetDevice> associatedPort;
     Time expirationTime;
   };
-  std::map<MooseSuffixAddress, PrefixState> m_localState;
+ 
+  Time m_expirationTime;
+
+  std::map<MoosePrefixAddress, PrefixState> m_prefixState;
+  std::map<Mac48Address, SuffixState> m_suffixState;
+  std::map<MooseSuffixAddress, SuffixState*> m_ethernetState;
+  std::map<MooseSuffixAddress, PortState> m_portState;
 
 };
 

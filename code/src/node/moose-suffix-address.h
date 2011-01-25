@@ -32,6 +32,8 @@ public:
   MooseSuffixAddress();
   MooseSuffixAddress(const uint8_t buffer[3]);
 
+  uint32_t GetInt() const;
+
 private:
 
   uint8_t m_address[6];

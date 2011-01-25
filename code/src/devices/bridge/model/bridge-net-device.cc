@@ -214,13 +214,13 @@ BridgeNetDevice::GetNBridgePorts (void) const
   return m_ports.size ();
 }
 
-/** Dislike this. */
+/** Dislike this slightly less now. */
 
 Ptr<NetDevice>
 BridgeNetDevice::GetBridgePort (uint32_t n) const
 {
   NS_LOG_FUNCTION_NOARGS ();
-  return m_ports[n]->m_device;
+  return m_ports[n]->GetDevice();
 }
 
 void 
