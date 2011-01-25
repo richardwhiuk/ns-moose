@@ -35,7 +35,12 @@ MooseBridgeNetDevice::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::MooseBridgeNetDevice")
     .SetParent<BridgeNetDevice> ()
-    .AddConstructor<MooseBridgeNetDevice> ();
+    .AddConstructor<MooseBridgeNetDevice> ()
+    .AddAttribute ("MooseExpirationTime",
+                   "Time it takes for learned MOOSE state entry to expire.",
+                   TimeValue (Seconds (30)),
+                   MakeTimeAccessor (&MooseBridgeNetDevice::m_expirationTime),
+                   MakeTimeChecker ());
   return tid;
 }
 
@@ -82,11 +87,11 @@ MooseAddress MooseBridgeNetDevice::FromMoose(MooseAddress const& addr){
      SuffixState* state = iter->second;
     
      if(state->expirationTime > now){ 
+        return MooseAddress(iter->second->ethernet);
+     } else {
         m_ethernetState.erase(iter);
         m_suffixState.erase(iter->second->ethernet);
         return MooseAddress(Mac48Address::GetBroadcast());
-     } else { 
-        return MooseAddress(iter->second->ethernet);
      }
 
   }
@@ -119,12 +124,17 @@ MooseAddress MooseBridgeNetDevice::ToMoose(MooseAddress const& addr){
          state.suffix = moose.GetMooseSuffix();
          state.expirationTime = now + m_expirationTime;
 
+	 NS_LOG_LOGIC("Allocating New MOOSE Suffix: (" << moose.GetMoosePrefix().GetInt() << "," << moose.GetMooseSuffix().GetInt() << ") for " << addr48);
+
          m_ethernetState[state.suffix] = &state;
 
      } else {
         SuffixState &state = iter->second;
         if(state.expirationTime > now){
             moose = MooseAddress::Combine(m_mooseAddress.GetMoosePrefix(), state.suffix);
+
+	    NS_LOG_LOGIC("Using Allocated MOOSE Suffix: (" << moose.GetMoosePrefix().GetInt() << "," << moose.GetMooseSuffix().GetInt() << ")");
+
             state.expirationTime = now + m_expirationTime;
         } else {
             // Delete old and alloc new
@@ -135,11 +145,13 @@ MooseAddress MooseBridgeNetDevice::ToMoose(MooseAddress const& addr){
             // Allocate New
 
             SuffixState &state = m_suffixState[addr48];
-          
+            
             moose = MooseAddress::Allocate(m_mooseAddress.GetMoosePrefix());
 	    state.ethernet = addr48;
             state.suffix = moose.GetMooseSuffix();
             state.expirationTime = now + m_expirationTime;
+
+	    NS_LOG_LOGIC("Expired MOOSE Suffix: (" << moose.GetMoosePrefix().GetInt() << "," << moose.GetMooseSuffix().GetInt() << ")");
 
             m_ethernetState[state.suffix] = &state;
 
