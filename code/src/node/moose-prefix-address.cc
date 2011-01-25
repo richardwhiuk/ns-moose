@@ -32,8 +32,8 @@ MoosePrefixAddress::MoosePrefixAddress(const uint8_t buffer[2]){
 
 const uint16_t MoosePrefixAddress::GetInt() const{
   uint16_t i;
-  i = m_address[0];
-  i += m_address[1] << 8;
+  i = m_address[0] << 8;
+  i += m_address[1] << 0;
   return i;
 }
 
