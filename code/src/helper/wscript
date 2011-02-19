@@ -1,7 +1,7 @@
 ## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
 
 def build(bld):
-    helper = bld.create_ns3_module('helper', ['internet-stack', 'wifi', 'point-to-point', 'csma', 'onoff', 'packet-sink', 'udp-echo', 'spectrum'])
+    helper = bld.create_ns3_module('helper', ['internet-stack', 'bridge', 'wifi', 'point-to-point', 'csma', 'onoff', 'packet-sink', 'udp-echo', 'spectrum'])
     helper.source = [
         'node-container.cc',
         'net-device-container.cc',
@@ -28,6 +28,7 @@ def build(bld):
         'ipv4-routing-helper.cc',
         'aodv-helper.cc',
         'mesh-helper.cc',
+        'moose-helper.cc',
         'dot11s-installer.cc',
         'flame-installer.cc',
         'athstats-helper.cc',
@@ -78,6 +79,7 @@ def build(bld):
         'ipv4-routing-helper.h',
         'aodv-helper.h',
         'mesh-helper.h',
+        'moose-helper.h',
         'mesh-stack-installer.h',
         'dot11s-installer.h',
         'flame-installer.h',
