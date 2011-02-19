@@ -1,0 +1,16 @@
+## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
+def build(bld):
+
+    mod = bld.create_ns3_module('simulation')
+    mod.source = [
+        ]
+
+    headers = bld.new_task_gen('ns3header')
+    headers.module = 'simulation'
+    headers.source = []	
+
+    obj = bld.create_ns3_program('simulation', ['bridge', 'internet-stack'])
+
+    obj.source = 'simulation.cc'
+
