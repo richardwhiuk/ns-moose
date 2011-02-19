@@ -30,6 +30,7 @@ class MoosePrefixAddress {
 
 public:
   MoosePrefixAddress();
+  MoosePrefixAddress(const long int number);
   MoosePrefixAddress(const uint8_t buffer[2]);
   const uint16_t GetInt() const;
 

@@ -26,6 +26,12 @@ MoosePrefixAddress::MoosePrefixAddress (){
    memset (m_address, 0, 2);
 }
 
+MoosePrefixAddress::MoosePrefixAddress (const long int number){
+   memset (m_address, 0, 2);
+   m_address[0] = (number >> 8);
+   m_address[1] = (number >> 0);
+}
+
 MoosePrefixAddress::MoosePrefixAddress(const uint8_t buffer[2]){
   memcpy(m_address, buffer, 2);
 }
