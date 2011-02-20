@@ -19,9 +19,13 @@
  */
 
 #include <boost/graph/dijkstra_shortest_paths.hpp>
+#include <boost/graph/kruskal_min_spanning_tree.hpp>
 #include "moose-helper.h"
 #include "ns3/moose-prefix-address.h"
 #include "ns3/log.h"
+
+#include <vector>
+#include <algorithm>
 
 NS_LOG_COMPONENT_DEFINE ("MooseHelper");
 
@@ -191,7 +195,7 @@ void MooseHelper::Create(MooseHelper::Network& n){
 			}
 
 		} else {
-			
+
 			// Realtime routing
 
 			for(long i = 0; i < n.t.bridges; i ++){
@@ -200,9 +204,62 @@ void MooseHelper::Create(MooseHelper::Network& n){
 			}
 		}
 	} else {
-		for(long i = 0; i < n.t.bridges; i ++){
-			Ptr<Node> bridgeNode = n.bridges.Get(i);
-			ethernetHelper.Install(bridgeNode, n.bridgeDevices[i]);
+		if(routing){
+
+			// Kruskall's - Give all links the same weight for now.
+
+			const long num_nodes = n.t.bridges;
+
+			std::vector<edge_descriptor> tree;
+
+			std::vector<long> weights(n.t.bridgeLinks.size(), 1);
+
+			graph_t g(n.t.bridgeLinks.begin(), n.t.bridgeLinks.end(), weights.begin(), num_nodes);
+			boost::property_map<graph_t, boost::edge_weight_t>::type weightmap = get(boost::edge_weight, g);
+
+			kruskal_minimum_spanning_tree(g,std::back_inserter(tree));
+
+			std::map<long,std::map<long,bool> > spanning;
+
+			for(long i = 0; i < n.t.bridges; ++i){
+				for(long j = 0; i < n.t.bridges; ++i){
+					spanning[i][j] = false;
+				}
+			}
+
+			for(std::vector<edge_descriptor>::iterator it = tree.begin(); it != tree.end(); ++it){
+				spanning[source(*it,g)][target(*it,g)] = true;
+				spanning[target(*it,g)][source(*it,g)] = true;
+			}
+
+			// Disable the other ports not included.
+
+			// bridge[0] has link to bridge[1] on port x => portMap[0][1] = x
+
+			// Question: is bridge[0][1] in spanning tree? -> i.e. is there some x, for which tree[x] = <0,1>
+
+			for(long i = 0; i < n.t.bridges; i ++){
+
+				std::map<Ptr<NetDevice>, bool> portsEnabled;
+
+				for(std::map<long, Ptr<NetDevice> >::iterator it = portMap[i].begin(); it != portMap[i].end(); it ++){
+					portsEnabled[it->second] = spanning[i][it->first];
+				}
+
+
+				Ptr<Node> bridgeNode = n.bridges.Get(i);
+				ethernetHelper.Install(bridgeNode, n.bridgeDevices[i], portsEnabled);
+			}
+			
+		
+		} else {
+			// Requires STP implementation
+
+			for(long i = 0; i < n.t.bridges; i ++){
+
+				Ptr<Node> bridgeNode = n.bridges.Get(i);
+				ethernetHelper.Install(bridgeNode, n.bridgeDevices[i]);
+			}
 		}
 	}
 
