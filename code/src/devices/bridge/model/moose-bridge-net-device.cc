@@ -36,6 +36,11 @@ MooseBridgeNetDevice::GetTypeId (void)
   static TypeId tid = TypeId ("ns3::MooseBridgeNetDevice")
     .SetParent<BridgeNetDevice> ()
     .AddConstructor<MooseBridgeNetDevice> ()
+    .AddAttribute ("MooseAddress",
+		   "Bridge MOOSE Address",
+		   MooseAddressValue(),
+		   MakeMooseAddressAccessor (&MooseBridgeNetDevice::m_mooseAddress),
+		   MakeMooseAddressChecker ())
     .AddAttribute ("MooseExpirationTime",
                    "Time it takes for learned MOOSE state entry to expire.",
                    TimeValue (Seconds (30)),
@@ -135,7 +140,9 @@ MooseAddress MooseBridgeNetDevice::ToMoose(MooseAddress const& addr){
 
 	    NS_LOG_LOGIC("Using Allocated MOOSE Suffix: (" << moose.GetMoosePrefix().GetInt() << "," << moose.GetMooseSuffix().GetInt() << ")");
 
-            state.expirationTime = now + m_expirationTime;
+            if(now + m_expirationTime > state.expirationTime){
+	    	state.expirationTime = now + m_expirationTime;
+            }
         } else {
             // Delete old and alloc new
 
@@ -167,6 +174,18 @@ MooseAddress MooseBridgeNetDevice::ToMoose(MooseAddress const& addr){
 
 }
 
+void MooseBridgeNetDevice::AddRoutes(std::map<MoosePrefixAddress, Ptr<BridgePortNetDevice> > routes){
+
+	for(std::map<MoosePrefixAddress, Ptr<BridgePortNetDevice> >::iterator it = routes.begin(); it != routes.end(); it ++){
+		
+     		PrefixState &state = m_prefixState[it->first];
+     		state.associatedPort = it->second;
+     		state.expirationTime = Simulator::GetMaximumSimulationTime();
+
+	}
+
+}
+
 void MooseBridgeNetDevice::Learn(MooseAddress const& addr, Ptr<BridgePortNetDevice> port){
   NS_LOG_FUNCTION_NOARGS ();
   
@@ -178,13 +197,17 @@ void MooseBridgeNetDevice::Learn(MooseAddress const& addr, Ptr<BridgePortNetDevi
      
      PrefixState &state = m_prefixState[addr.GetMoosePrefix()];
      state.associatedPort = port;
-     state.expirationTime = now + m_expirationTime;
+     if(now + m_expirationTime > state.expirationTime){
+	     state.expirationTime = now + m_expirationTime;
+     }
 
   } else {
 
      PortState &state = m_portState[addr.GetMooseSuffix()];
      state.associatedPort = port;
-     state.expirationTime = now + m_expirationTime;
+     if(now + m_expirationTime > state.expirationTime){
+	     state.expirationTime = now + m_expirationTime;
+     }
 
   }
  

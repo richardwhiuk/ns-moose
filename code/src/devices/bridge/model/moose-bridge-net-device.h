@@ -44,26 +44,15 @@ public:
   MooseAddress ToMoose(MooseAddress const& addr);
   MooseAddress FromMoose(MooseAddress const& addr);
 
+  void AddRoutes(std::map<MoosePrefixAddress, Ptr<BridgePortNetDevice> > routes);
+
+  void SetMoosePrefixAddress(MoosePrefixAddress const& prefix);
+  MoosePrefixAddress GetMoosePrefixAddress();
 
 protected:
 
   virtual void ForwardUnicast (Ptr<BridgePortNetDevice> incomingPort, Ptr<const Packet> packet, uint16_t protocol, Mac48Address src, Mac48Address dst);
-
-// From NetDevice
-
-// Unconvinced we need these...
-
-//  virtual bool Send (Ptr<Packet> packet, const Address& dest, uint16_t protocolNumber);
-//  virtual bool SendFrom (Ptr<Packet> packet, const Address& source, const Address& dest, uint16_t protocolNumber);
-
-// From BridgeNetDevice
-
-/*
-
-  virtual void Forward (Ptr<BridgePortNetDevice> port, Ptr<const Packet> packet, uint16_t protocol, Address const &src, Address const &dst, PacketType packetType);
-  virtual void ForwardBroadcast (Ptr<BridgePortNetDevice> incomingPort, Ptr<const Packet> packet, uint16_t protocol, Mac48Address src, Mac48Address dst);
-  virtual void Learn (Address const &src, Ptr<BridgePortNetDevice> port);
-  virtual Ptr<BridgePortNetDevice> GetLearnedState (Mac48Address source); */
+	
 
   virtual Ptr<BridgePortNetDevice> CreateBridgePort(Ptr<BridgeNetDevice> bridge, Ptr<NetDevice> device, Ptr<Node> node);
 
