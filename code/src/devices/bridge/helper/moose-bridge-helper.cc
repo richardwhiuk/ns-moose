@@ -23,6 +23,7 @@
 #include "ns3/moose-bridge-net-device.h"
 #include "ns3/node.h"
 #include "ns3/names.h"
+#include "ns3/moose-address.h"
 
 NS_LOG_COMPONENT_DEFINE ("MooseBridgeHelper");
 
@@ -42,13 +43,46 @@ MooseBridgeHelper::SetDeviceAttribute (std::string n1, const AttributeValue &v1)
 }
 
 NetDeviceContainer
+MooseBridgeHelper::Install (Ptr<Node> node, NetDeviceContainer c, MoosePrefixAddress addr, std::map<Ptr<NetDevice>, MoosePrefixAddress> routes)
+{
+  NS_LOG_FUNCTION_NOARGS ();
+  NS_LOG_LOGIC ("**** Install MOOSE bridge device on node " << node->GetId ());
+
+  SetDeviceAttribute("MooseAddress", MooseAddressValue(MooseAddress::Allocate(addr)));
+
+  NetDeviceContainer devs;
+  Ptr<MooseBridgeNetDevice> dev = m_deviceFactory.Create<MooseBridgeNetDevice> ();
+  devs.Add (dev);
+  node->AddDevice (dev);
+
+  std::map<MoosePrefixAddress, Ptr<BridgePortNetDevice> > portMap;
+
+  for (NetDeviceContainer::Iterator i = c.Begin (); i != c.End (); ++i)
+    {
+      NS_LOG_LOGIC ("**** Add MooseBridgePort "<< *i);
+      Ptr<BridgePortNetDevice> port = dev->AddBridgePort (*i);
+      std::map<Ptr<NetDevice>, MoosePrefixAddress>::iterator it = routes.find(*i);
+      if(it != routes.end()){
+           portMap[routes[*i]] = port;
+      }
+    }
+
+  dev->AddRoutes(portMap);
+
+  return devs;
+}
+
+
+NetDeviceContainer
 MooseBridgeHelper::Install (Ptr<Node> node, NetDeviceContainer c)
 {
   NS_LOG_FUNCTION_NOARGS ();
   NS_LOG_LOGIC ("**** Install MOOSE bridge device on node " << node->GetId ());
 
+  SetDeviceAttribute("MooseAddress", MooseAddressValue(MooseAddress::Allocate()));
+
   NetDeviceContainer devs;
-  Ptr<BridgeNetDevice> dev = m_deviceFactory.Create<BridgeNetDevice> ();
+  Ptr<BridgeNetDevice> dev = m_deviceFactory.Create<MooseBridgeNetDevice> ();
   devs.Add (dev);
   node->AddDevice (dev);
 

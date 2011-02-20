@@ -28,6 +28,8 @@
 #include "ns3/net-device-container.h"
 #include "ns3/object-factory.h"
 #include <string>
+#include <map>
+#include "ns3/moose-prefix-address.h"
 
 namespace ns3 {
 
@@ -64,6 +66,12 @@ public:
    */
   NetDeviceContainer Install (Ptr<Node> node, NetDeviceContainer c);
   /**
+   * This method creates an ns3::MooseBridgeNetDevice with static routing.
+   */
+
+  NetDeviceContainer Install (Ptr<Node> node, NetDeviceContainer c, MoosePrefixAddress addr, std::map<Ptr<NetDevice>, MoosePrefixAddress> routes);
+
+  /**
    * This method creates an ns3::MooseBridgeNetDevice with the attributes
    * configured by MooseBridgeHelper::SetDeviceAttribute, adds the device
    * to the node, and attaches the given NetDevices as ports of the
@@ -82,3 +90,4 @@ private:
 
 
 #endif /* MOOSE_BRIDGE_HELPER_H */
+
