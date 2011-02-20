@@ -100,6 +100,11 @@ public:
 
 		std::map<long, NetDeviceContainer> bridgeDevices;
 		std::map<long, NetDeviceContainer> hostDevices;
+
+		// IP Interfaces
+
+		std::map<long, Ipv4InterfaceContainer> interfaces;
+
 	};
 
 	CsmaHelper csma;

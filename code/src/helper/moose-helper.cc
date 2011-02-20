@@ -211,7 +211,7 @@ void MooseHelper::Create(MooseHelper::Network& n){
 	internet.Install(n.hosts);
 
 	for(long i = 0; i < n.t.hosts; i ++){
-		ipv4.Assign(n.hostDevices[i]);
+		n.interfaces[i] = ipv4.Assign(n.hostDevices[i]);
 	}
 
 }
