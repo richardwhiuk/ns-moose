@@ -196,16 +196,16 @@ void MooseBridgeNetDevice::Learn(MooseAddress const& addr, Ptr<BridgePortNetDevi
   if(addr.GetMoosePrefix() != m_mooseAddress.GetMoosePrefix()){
      
      PrefixState &state = m_prefixState[addr.GetMoosePrefix()];
-     state.associatedPort = port;
      if(now + m_expirationTime > state.expirationTime){
+	     state.associatedPort = port;				// Only update if the expiration is not in the future
 	     state.expirationTime = now + m_expirationTime;
      }
 
   } else {
 
      PortState &state = m_portState[addr.GetMooseSuffix()];
-     state.associatedPort = port;
      if(now + m_expirationTime > state.expirationTime){
+	     state.associatedPort = port;
 	     state.expirationTime = now + m_expirationTime;
      }
 
