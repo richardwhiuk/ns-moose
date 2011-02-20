@@ -158,17 +158,14 @@ void MooseHelper::Create(MooseHelper::Network& n){
 				vertex_descriptor s = boost::vertex(root,g);
 				boost::dijkstra_shortest_paths(g, s, boost::predecessor_map(&p[0]));
 
-				std::cout << "parents from " << root << ":" << std::endl;
 				boost::graph_traits<graph_t>::vertex_iterator vi, vend;
 
-				std::map<Ptr<NetDevice>, MoosePrefixAddress> routes;
+				std::multimap<Ptr<NetDevice>, MoosePrefixAddress> routes;
 
 				for (boost::tie(vi, vend) = vertices(g); vi != vend; ++vi) {
-					std::cout << root << "->" << *vi << " ";
 	
 					if(*vi == s){
 						// Don't inject into routing table.
-						std::cout << "At destination" << std::endl;
 					} else {
 						vertex_descriptor current = *vi;
 						while(p[current] != p[p[current]]){
@@ -178,19 +175,13 @@ void MooseHelper::Create(MooseHelper::Network& n){
 						if(p[current] == s){
 							// Inject routing decision
 	
-							std::cout << current << std::endl;
-
-							routes[portMap[root][current]] = MoosePrefixAddress(root);
+							routes.insert(std::make_pair(portMap[root][current],MoosePrefixAddress(*vi)));
 	
 						} else {
-
 							// Don't inject
-
-							std::cout << "unreachable" << std::endl;
 						}
 					}
 				}
-				std::cout << std::endl;
 
 				// Create the switch
 
