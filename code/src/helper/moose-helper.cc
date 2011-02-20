@@ -161,7 +161,7 @@ void MooseHelper::Create(MooseHelper::Network& n){
 				std::cout << "parents from " << root << ":" << std::endl;
 				boost::graph_traits<graph_t>::vertex_iterator vi, vend;
 
-				std::map<MoosePrefixAddress, Ptr<NetDevice> > routes;
+				std::map<Ptr<NetDevice>, MoosePrefixAddress> routes;
 
 				for (boost::tie(vi, vend) = vertices(g); vi != vend; ++vi) {
 					std::cout << root << "->" << *vi << " ";
@@ -180,7 +180,7 @@ void MooseHelper::Create(MooseHelper::Network& n){
 	
 							std::cout << current << std::endl;
 
-							routes[MoosePrefixAddress(root)] = portMap[root][current];
+							routes[portMap[root][current]] = MoosePrefixAddress(root);
 	
 						} else {
 
