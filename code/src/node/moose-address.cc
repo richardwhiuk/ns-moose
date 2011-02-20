@@ -124,6 +124,20 @@ MooseAddress MooseAddress::Combine(MoosePrefixAddress prefix, MooseSuffixAddress
 
 }
 
+ATTRIBUTE_HELPER_CPP (MooseAddress);
+
+std::ostream& operator<< (std::ostream& os, MooseAddress const& address)
+{
+  os << (address.GetMacAddress());
+  return os;
+}
+std::istream & operator >> (std::istream &is, MooseAddress &address)
+{
+  Mac48Address addr;
+  is >> addr;
+  address = MooseAddress(addr);
+  return is;
+}
 
 }
 

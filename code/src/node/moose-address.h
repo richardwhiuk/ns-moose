@@ -94,6 +94,11 @@ private:
 
 };
 
+std::ostream& operator<< (std::ostream& os, MooseAddress const& address);
+std::istream & operator >> (std::istream &is, MooseAddress &address);
+
+ATTRIBUTE_HELPER_HEADER (MooseAddress);
+
 }
 
 #endif
