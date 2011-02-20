@@ -280,13 +280,34 @@ MooseBridgeNetDevice::ForwardUnicast (Ptr<BridgePortNetDevice> incomingPort, Ptr
 
 }
 
+void MooseBridgeNetDevice::ForwardBroadcast (Ptr<BridgePortNetDevice> incomingPort, Ptr<const Packet> packet, uint16_t protocol, Mac48Address src, Mac48Address dst)
+{
+  NS_LOG_FUNCTION_NOARGS ();
 
+  // We need to do reverse path forwarding to prevent loops
 
-/*
-//bool Send (Ptr<Packet> packet, const Address& dest, uint16_t protocolNumber);
-//bool SendFrom (Ptr<Packet> packet, const Address& source, const Address& dest, uint16_t protocolNumber);
-void Learn (Address const &src, Ptr<BridgePortNetDevice> port);
-Ptr<BridgePortNetDevice> GetLearnedState (Mac48Address source);*/
+  // This is as simple as finding out the best port for sending and checking for equality
+
+  Ptr<BridgePortNetDevice> bestPort = GetLearnedPort(MooseAddress(src));
+
+  if(bestPort == NULL){
+      // Tricky. Best idea: Forward to all ports and hope that we can resolve later :)
+  } else if(bestPort != incomingPort){
+       return;
+  } 
+
+  // Now we can forward.
+
+  for (std::vector< Ptr<BridgePortNetDevice> >::iterator iter = m_ports.begin ();
+         iter != m_ports.end (); iter++)
+    {
+      Ptr<BridgePortNetDevice> port = *iter;
+      if (port != incomingPort)
+        {
+          port->Send(packet->Copy (), src, dst, protocol);
+        }
+    }
+}
 
 
 }
