@@ -86,7 +86,7 @@ public:
    * bridging node you must enable IP on the BridgeNetDevice itself,
    * never on its port netdevices.
    */
-  void AddBridgePort (Ptr<NetDevice> bridgePort);
+  Ptr<BridgePortNetDevice> AddBridgePort (Ptr<NetDevice> bridgePort);
 
   uint32_t GetNBridgePorts (void) const;
 

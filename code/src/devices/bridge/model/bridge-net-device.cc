@@ -223,7 +223,7 @@ BridgeNetDevice::GetBridgePort (uint32_t n) const
   return m_ports[n]->GetDevice();
 }
 
-void 
+Ptr<BridgePortNetDevice>  
 BridgeNetDevice::AddBridgePort (Ptr<NetDevice> device)
 {
   NS_LOG_FUNCTION_NOARGS ();
@@ -241,6 +241,8 @@ BridgeNetDevice::AddBridgePort (Ptr<NetDevice> device)
 
   m_ports.push_back(port);
   m_channel->AddChannel (device->GetChannel ());
+
+  return port;
 
 }
 
