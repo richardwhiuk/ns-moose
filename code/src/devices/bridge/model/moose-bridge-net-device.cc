@@ -298,15 +298,8 @@ void MooseBridgeNetDevice::ForwardBroadcast (Ptr<BridgePortNetDevice> incomingPo
 
   // Now we can forward.
 
-  for (std::vector< Ptr<BridgePortNetDevice> >::iterator iter = m_ports.begin ();
-         iter != m_ports.end (); iter++)
-    {
-      Ptr<BridgePortNetDevice> port = *iter;
-      if (port != incomingPort)
-        {
-          port->Send(packet->Copy (), src, dst, protocol);
-        }
-    }
+  BridgeNetDevice::ForwardBroadcast(incomingPort, packet, protocol, src, dst);
+
 }
 
 
