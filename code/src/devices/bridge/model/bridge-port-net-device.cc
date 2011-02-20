@@ -40,7 +40,7 @@ BridgePortNetDevice::GetTypeId (void)
 }
 
 
-BridgePortNetDevice::BridgePortNetDevice(Ptr<BridgeNetDevice> bridge, Ptr<NetDevice> device, Ptr<Node> node) : m_bridge(bridge), m_device(device){
+BridgePortNetDevice::BridgePortNetDevice(Ptr<BridgeNetDevice> bridge, Ptr<NetDevice> device, Ptr<Node> node) : m_bridge(bridge), m_device(device), m_enabled(true){
   NS_LOG_FUNCTION_NOARGS ();
 
   if (!Mac48Address::IsMatchingType (device->GetAddress()))
@@ -62,10 +62,16 @@ BridgePortNetDevice::~BridgePortNetDevice(){
   NS_LOG_FUNCTION_NOARGS ();
 }
 
+void BridgePortNetDevice::SetEnabled(bool enabled){
+	m_enabled = enabled;
+}
+
 void BridgePortNetDevice::Send(Ptr<Packet> packet, const Address& source, const Address& dest, uint16_t protocolNumber){
 	NS_LOG_FUNCTION_NOARGS ();
-	NS_LOG_LOGIC("SendingPacket(src=" << source << ", dest=" << dest << ")");
-	m_device->SendFrom(packet->Copy(), source, dest, protocolNumber);
+	if(m_enabled){
+		NS_LOG_LOGIC("SendingPacket(src=" << source << ", dest=" << dest << ")");
+		m_device->SendFrom(packet->Copy(), source, dest, protocolNumber);
+	}
 }
 
 Ptr<NetDevice> BridgePortNetDevice::GetDevice(){
@@ -81,6 +87,9 @@ BridgePortNetDevice::Receive (Ptr<NetDevice> incomingPort, Ptr<const Packet> pac
                                     Address const &src, Address const &dst, NetDevice::PacketType packetType)
 {
   NS_LOG_FUNCTION_NOARGS ();
+
+  if(m_enabled){
+
   NS_LOG_LOGIC ("UID is " << packet->GetUid ());
 
   NS_LOG_LOGIC ("LearningBridgeForward (incomingPort=" << incomingPort->GetInstanceTypeId ().GetName ()
@@ -90,6 +99,8 @@ BridgePortNetDevice::Receive (Ptr<NetDevice> incomingPort, Ptr<const Packet> pac
   m_bridge->Learn(src, this);
 
   m_bridge->Forward(this, packet, protocol, src, dst, packetType);
+
+  }
 
 }
 
