@@ -43,7 +43,7 @@ MooseBridgeHelper::SetDeviceAttribute (std::string n1, const AttributeValue &v1)
 }
 
 NetDeviceContainer
-MooseBridgeHelper::Install (Ptr<Node> node, NetDeviceContainer c, MoosePrefixAddress addr, std::map<Ptr<NetDevice>, MoosePrefixAddress> routes)
+MooseBridgeHelper::Install (Ptr<Node> node, NetDeviceContainer c, MoosePrefixAddress addr, std::multimap<Ptr<NetDevice>, MoosePrefixAddress> routes)
 {
   NS_LOG_FUNCTION_NOARGS ();
   NS_LOG_LOGIC ("**** Install MOOSE bridge device on node " << node->GetId ());
@@ -61,9 +61,8 @@ MooseBridgeHelper::Install (Ptr<Node> node, NetDeviceContainer c, MoosePrefixAdd
     {
       NS_LOG_LOGIC ("**** Add MooseBridgePort "<< *i);
       Ptr<BridgePortNetDevice> port = dev->AddBridgePort (*i);
-      std::map<Ptr<NetDevice>, MoosePrefixAddress>::iterator it = routes.find(*i);
-      if(it != routes.end()){
-           portMap[routes[*i]] = port;
+      for(std::multimap<Ptr<NetDevice>, MoosePrefixAddress>::iterator it = routes.lower_bound(*i); it != routes.upper_bound(*i); ++it){
+           portMap[it->second] = port;
       }
     }
 

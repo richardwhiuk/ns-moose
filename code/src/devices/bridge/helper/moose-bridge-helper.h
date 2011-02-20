@@ -69,7 +69,7 @@ public:
    * This method creates an ns3::MooseBridgeNetDevice with static routing.
    */
 
-  NetDeviceContainer Install (Ptr<Node> node, NetDeviceContainer c, MoosePrefixAddress addr, std::map<Ptr<NetDevice>, MoosePrefixAddress> routes);
+  NetDeviceContainer Install (Ptr<Node> node, NetDeviceContainer c, MoosePrefixAddress addr, std::multimap<Ptr<NetDevice>, MoosePrefixAddress> routes);
 
   /**
    * This method creates an ns3::MooseBridgeNetDevice with the attributes
