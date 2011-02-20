@@ -18,7 +18,7 @@
 
 // Topology
 //
-//   n0       n1
+//   H0       H1
 //   |        |
 //  ------------      ------------
 //  | Switch 0 |------| Switch 2 |
@@ -27,11 +27,11 @@
 //  ------------      ------------
 //  | Switch 1 |------| Switch 3 |
 //  ------------      ------------
-//       |
-//       n2
+//       |		    |
+//       H2		    H3
 //
 // - 100 Mb/s
-// - CBR/UDP flows from n0 to n1 and then from n0 to n2
+// - CBR/UDP flows from Host (h) 0 to Host 1 and then from Host 0 to Host 2
 // - DropTail queues
 
 #include "ns3/simulator-module.h"
@@ -63,13 +63,14 @@ int main (int argc, char *argv[])
   NS_LOG_INFO ("Configure Topology.");
 
   n.t.bridges = 4;
-  n.t.hosts = 3;
+  n.t.hosts = 4;
 
   // Link hosts to bridges
 
   n.t.hostLinks[0] = 0;
   n.t.hostLinks[1] = 0;
   n.t.hostLinks[2] = 1; 
+  n.t.hostLinks[3] = 3;
 
   // Link the two bridges together
  
@@ -82,7 +83,36 @@ int main (int argc, char *argv[])
 
   moose.Create(n);
 
-  // TODO: Apps
+
+  //
+  // Create UDP Applications to send the two packets
+  //
+
+  NS_LOG_INFO ("Create Applications.");
+
+  uint16_t port = 9;   // Discard port (RFC 863)
+
+  UdpClientHelper udpClientHelperA (n.interfaces[1].GetAddress(0), port);		// Target: Host 1
+  udpClientHelperA.SetAttribute ("MaxPackets", UintegerValue (1));
+
+  ApplicationContainer udpClientA = udpClientHelperA.Install (n.hosts.Get(0));		// n0 -> n1
+  udpClientA.Start (Seconds (1.0));
+  udpClientA.Stop  (Seconds (3.0));
+
+  UdpClientHelper udpClientHelperB (n.interfaces[2].GetAddress(0), port);		// Target: Host 2
+  udpClientHelperB.SetAttribute ("MaxPackets", UintegerValue (1));
+
+  ApplicationContainer udpClientB = udpClientHelperB.Install (n.hosts.Get(0));		// n0 -> n2
+  udpClientB.Start (Seconds (6.0));
+  udpClientB.Stop  (Seconds (8.0));
+
+  NodeContainer serverNodes;
+  serverNodes.Add(n.hosts.Get(1)); // Server: Host 1
+  serverNodes.Add(n.hosts.Get(2)); // Server: Host 2
+
+  UdpServerHelper udpServerHelper (port);
+  ApplicationContainer udpServers = udpServerHelper.Install (serverNodes);
+  udpServers.Start (Seconds (0.0));
 
   // Tracing
 
