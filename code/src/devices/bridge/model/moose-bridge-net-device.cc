@@ -175,8 +175,11 @@ MooseAddress MooseBridgeNetDevice::ToMoose(MooseAddress const& addr){
 }
 
 void MooseBridgeNetDevice::AddRoutes(std::map<MoosePrefixAddress, Ptr<BridgePortNetDevice> > routes){
+	NS_LOG_FUNCTION_NOARGS ();
 
 	for(std::map<MoosePrefixAddress, Ptr<BridgePortNetDevice> >::iterator it = routes.begin(); it != routes.end(); it ++){
+		
+		NS_LOG_LOGIC("Adding Prefix State: (port: " << it->second << ", time: " << Simulator::GetMaximumSimulationTime() << ")");
 		
      		PrefixState &state = m_prefixState[it->first];
      		state.associatedPort = it->second;
@@ -197,6 +200,8 @@ void MooseBridgeNetDevice::Learn(MooseAddress const& addr, Ptr<BridgePortNetDevi
      
      PrefixState &state = m_prefixState[addr.GetMoosePrefix()];
      if(now + m_expirationTime > state.expirationTime){
+	     NS_LOG_LOGIC("Updating Learned Prefix State: (port: " << port << ", time: " << now + m_expirationTime << ", address: " << addr << ") - Previous State: (port: " << state.associatedPort << ", time: " << state.expirationTime << ")");
+
 	     state.associatedPort = port;				// Only update if the expiration is not in the future
 	     state.expirationTime = now + m_expirationTime;
      }
@@ -205,6 +210,7 @@ void MooseBridgeNetDevice::Learn(MooseAddress const& addr, Ptr<BridgePortNetDevi
 
      PortState &state = m_portState[addr.GetMooseSuffix()];
      if(now + m_expirationTime > state.expirationTime){
+	     NS_LOG_LOGIC("Updating Learned Suffix State: (port: " << port << ", time: " << now + m_expirationTime << ", address: " << addr << ") - Previous State: (port: " << state.associatedPort << ", time: " << state.expirationTime << ")");
 	     state.associatedPort = port;
 	     state.expirationTime = now + m_expirationTime;
      }
