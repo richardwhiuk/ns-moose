@@ -40,6 +40,29 @@ BridgeHelper::SetDeviceAttribute (std::string n1, const AttributeValue &v1)
 }
 
 NetDeviceContainer
+BridgeHelper::Install (Ptr<Node> node, NetDeviceContainer c, std::map<Ptr<NetDevice>, bool> portsEnabled)
+{
+  NS_LOG_FUNCTION_NOARGS ();
+  NS_LOG_LOGIC ("**** Install bridge device on node " << node->GetId ());
+
+  NetDeviceContainer devs;
+  Ptr<BridgeNetDevice> dev = m_deviceFactory.Create<BridgeNetDevice> ();
+  devs.Add (dev);
+  node->AddDevice (dev);
+
+  for (NetDeviceContainer::Iterator i = c.Begin (); i != c.End (); ++i)
+    {
+      NS_LOG_LOGIC ("**** Add BridgePort "<< *i);
+      Ptr<BridgePortNetDevice> port = dev->AddBridgePort (*i);
+      if(portsEnabled.find(*i) != portsEnabled.end()){
+         port->SetEnabled(portsEnabled[*i]);
+      }
+    }
+  return devs;
+}
+
+
+NetDeviceContainer
 BridgeHelper::Install (Ptr<Node> node, NetDeviceContainer c)
 {
   NS_LOG_FUNCTION_NOARGS ();
