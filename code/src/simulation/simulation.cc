@@ -18,14 +18,14 @@
 
 // Topology
 //
-//   H0       H1
-//   |        |
+//       H0                 H1
+//       |		    |
 //  ------------      ------------
-//  | Switch 0 |------| Switch 2 |
+//  | Switch 0 |------| Switch 1 |
 //  ------------      ------------
 //       |                  |
 //  ------------      ------------
-//  | Switch 1 |------| Switch 3 |
+//  | Switch 2 |------| Switch 3 |
 //  ------------      ------------
 //       |		    |
 //       H2		    H3
@@ -49,12 +49,23 @@ NS_LOG_COMPONENT_DEFINE ("MooseSimulation");
 int main (int argc, char *argv[])
 {
 
+  bool useMoose = true;
+  std::string tracefile = "simulation.tr";
+
   CommandLine cmd;			// Allow CommandLine args
+  cmd.AddValue("moose", "Use MOOSE instead of Ethernet? [true]", useMoose);
+  cmd.AddValue("trace", "Trace file output [simulation.tr]", tracefile);
   cmd.Parse (argc, argv);
 
   // Moose Helper
 
   MooseHelper moose;
+
+  if(useMoose){
+  	moose.SetMoose();
+  } else {
+	moose.SetEthernet();
+  }
 
   // Setup Network
 
@@ -68,8 +79,8 @@ int main (int argc, char *argv[])
   // Link hosts to bridges
 
   n.t.hostLinks[0] = 0;
-  n.t.hostLinks[1] = 0;
-  n.t.hostLinks[2] = 1; 
+  n.t.hostLinks[1] = 1;
+  n.t.hostLinks[2] = 2; 
   n.t.hostLinks[3] = 3;
 
   // Link the two bridges together
@@ -92,23 +103,33 @@ int main (int argc, char *argv[])
 
   uint16_t port = 9;   // Discard port (RFC 863)
 
-  UdpClientHelper udpClientHelperA (n.interfaces[1].GetAddress(0), port);		// Target: Host 1
-  udpClientHelperA.SetAttribute ("MaxPackets", UintegerValue (1));
+  int i,j;
 
-  ApplicationContainer udpClientA = udpClientHelperA.Install (n.hosts.Get(0));		// n0 -> n1
-  udpClientA.Start (Seconds (1.0));
-  udpClientA.Stop  (Seconds (3.0));
-
-  UdpClientHelper udpClientHelperB (n.interfaces[2].GetAddress(0), port);		// Target: Host 2
-  udpClientHelperB.SetAttribute ("MaxPackets", UintegerValue (1));
-
-  ApplicationContainer udpClientB = udpClientHelperB.Install (n.hosts.Get(0));		// n0 -> n2
-  udpClientB.Start (Seconds (6.0));
-  udpClientB.Stop  (Seconds (8.0));
+  // 0->1, 0->2, 0->3, 1->0, 1->2, 1->3, 2->0, 2->1, 2->3, 3->0, 3->1, 3->2
 
   NodeContainer serverNodes;
-  serverNodes.Add(n.hosts.Get(1)); // Server: Host 1
-  serverNodes.Add(n.hosts.Get(2)); // Server: Host 2
+
+  for(i = 0; i < 4; ++i){
+
+    for(j = 0; j < 4; ++j){
+
+	if(i != j){		
+
+  	   UdpClientHelper udpClientHelper (n.interfaces[j].GetAddress(0), port);		// i->j
+  	   udpClientHelper.SetAttribute ("MaxPackets", UintegerValue (1));
+
+  	   ApplicationContainer udpClient = udpClientHelper.Install (n.hosts.Get(i));
+
+           int start = i*4 + j; 
+
+  	   udpClient.Start (Seconds (start));
+  	   udpClient.Stop  (Seconds (start + 1));
+	}
+     }
+
+     serverNodes.Add(n.hosts.Get(i)); 		// Add host i as a server.
+
+  }
 
   UdpServerHelper udpServerHelper (port);
   ApplicationContainer udpServers = udpServerHelper.Install (serverNodes);
@@ -119,7 +140,7 @@ int main (int argc, char *argv[])
   NS_LOG_INFO ("Configure Tracing.");
 
   AsciiTraceHelper ascii;
-  moose.csma.EnableAsciiAll (ascii.CreateFileStream ("moose-bridge.tr"));
+  moose.csma.EnableAsciiAll (ascii.CreateFileStream (tracefile));
 
   NS_LOG_INFO ("Run Simulation.");
   Simulator::Run ();
