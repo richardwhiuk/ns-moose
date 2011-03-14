@@ -25,11 +25,11 @@
 
 namespace ns3 {
 
-class Mesh_Topology_Helper {
+class MeshTopologyHelper {
 	
 public:
 
-	Topology Create(long hosts, long size);	
+	Topology static Create(long hosts, long size);	
 
 };
 

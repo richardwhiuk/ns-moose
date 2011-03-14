@@ -25,11 +25,11 @@
 
 namespace ns3 {
 
-class Torus_Topology_Helper {
+class TorusTopologyHelper {
 	
 public:
 
-	Topology Create(long hosts, long size);	
+	Topology static Create(long hosts, long size);	
 
 };
 

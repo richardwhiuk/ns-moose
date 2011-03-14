@@ -25,11 +25,11 @@
 
 namespace ns3 {
 
-class Cube_Topology_Helper {
+class CubeTopologyHelper {
 	
 public:
 
-	Topology Create(long hosts, long size);	
+	static Topology Create(long hosts, long size);	
 
 };
 

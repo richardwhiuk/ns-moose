@@ -5,13 +5,15 @@ def build(bld):
     obj.source = [
 	'model/topology.cc',
 	'helper/cube.cc',
-	'helper/torus.cc'
+	'helper/torus.cc',
+	'helper/mesh.cc'
         ]
     headers = bld.new_task_gen('ns3header')
     headers.module = 'topology'
     headers.source = [
 	'model/topology.h',
 	'helper/cube.h',
-	'helper/torus.h'
+	'helper/torus.h',
+	'helper/mesh.h'
         ]
 

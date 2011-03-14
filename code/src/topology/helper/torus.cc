@@ -21,11 +21,11 @@
 #include "torus.h"
 #include "ns3/log.h"
 
-NS_LOG_COMPONENT_DEFINE ("Torus_Topology_Helper");
+NS_LOG_COMPONENT_DEFINE ("TorusTopologyHelper");
 
 namespace ns3 {
 
-Topology Torus_Topology_Helper::Create(long hosts, long size){
+Topology TorusTopologyHelper::Create(long hosts, long size){
 
 	Topology t;
 

@@ -21,11 +21,11 @@
 #include "cube.h"
 #include "ns3/log.h"
 
-NS_LOG_COMPONENT_DEFINE ("Cube_Topology_Helper");
+NS_LOG_COMPONENT_DEFINE ("CubeTopologyHelper");
 
 namespace ns3 {
 
-Topology Cube_Topology_Helper::Create(long hosts, long size){
+Topology CubeTopologyHelper::Create(long hosts, long size){
 
 	Topology t;
 

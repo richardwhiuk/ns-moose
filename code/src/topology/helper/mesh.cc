@@ -21,11 +21,11 @@
 #include "mesh.h"
 #include "ns3/log.h"
 
-NS_LOG_COMPONENT_DEFINE ("Mesh_Topology_Helper");
+NS_LOG_COMPONENT_DEFINE ("MeshTopologyHelper");
 
 namespace ns3 {
 
-Topology Mesh_Topology_Helper::Create(long hosts, long size){
+Topology MeshTopologyHelper::Create(long hosts, long size){
 
 	Topology t;
 
