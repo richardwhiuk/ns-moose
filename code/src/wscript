@@ -66,6 +66,7 @@ all_modules = (
     'contrib/topology-read',
     'contrib/energy',
     'tools/visualizer',
+    'topology',
     'simulation'
     )
 

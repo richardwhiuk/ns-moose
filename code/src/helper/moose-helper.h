@@ -21,6 +21,7 @@
 #ifndef MOOSE_HELPER_H
 #define MOOSE_HELPER_H
 
+#include "ns3/topology.h"
 #include "ns3/node.h"
 #include "ns3/moose-bridge-net-device.h"
 #include "ns3/moose-bridge-helper.h"
@@ -52,41 +53,6 @@ public:
 	typedef boost::graph_traits< graph_t >::vertex_descriptor vertex_descriptor;
 	typedef boost::graph_traits< graph_t >::edge_descriptor edge_descriptor;
 	
-	struct Topology {
-	
-	public:
-		long bridges;
-		long hosts;
-		typedef std::map<long,long> HostLinks;
-		typedef std::pair<long,long> BridgeLink;
-
-		struct BridgeLinkCompare {
-			// we don't care about ordering inside a pair, but we do care about pair order
-
-			bool operator()( BridgeLink const &lhs, BridgeLink const &rhs) {
-				if(lhs.first < lhs.first){
-					if(rhs.first < rhs.second){
-						return (lhs.first < rhs.first) ? true : (lhs.second < rhs.second);
-					} else {
-						return (lhs.first < rhs.second) ? true : (lhs.second < rhs.first);
-					}
-				} else {
-					if(rhs.first < rhs.second){
-						return (lhs.second < rhs.first) ? true : (lhs.first < rhs.second);
-					} else {
-						return (lhs.second < rhs.second) ? true : (lhs.first < rhs.first);
-					}
-				}
-			}
-		};
-	
-		typedef std::set<BridgeLink, BridgeLinkCompare> BridgeLinks;
-
-		HostLinks hostLinks;
-		BridgeLinks bridgeLinks;
-
-	};
-
 	struct Network {
 		
 		Topology t;
