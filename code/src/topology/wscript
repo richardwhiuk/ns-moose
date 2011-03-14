@@ -4,12 +4,14 @@ def build(bld):
     obj = bld.create_ns3_module('topology', ['node'])
     obj.source = [
 	'model/topology.cc',
-	'helper/cube.cc'
+	'helper/cube.cc',
+	'helper/torus.cc'
         ]
     headers = bld.new_task_gen('ns3header')
     headers.module = 'topology'
     headers.source = [
 	'model/topology.h',
-	'helper/cube.h'
+	'helper/cube.h',
+	'helper/torus.h'
         ]
 
