@@ -51,10 +51,12 @@ int main (int argc, char *argv[])
 
   bool useMoose = true;
   std::string tracefile = "simulation.tr";
+  long hosts = 1;
 
   CommandLine cmd;			// Allow CommandLine args
   cmd.AddValue("moose", "Use MOOSE instead of Ethernet? [true]", useMoose);
   cmd.AddValue("trace", "Trace file output [simulation.tr]", tracefile);
+  cmd.AddValue("hosts", "Number of hosts per switch [1]", hosts);
   cmd.Parse (argc, argv);
 
   // Moose Helper
@@ -74,16 +76,19 @@ int main (int argc, char *argv[])
   NS_LOG_INFO ("Configure Topology.");
 
   n.t.bridges = 4;
-  n.t.hosts = 4;
+  n.t.hosts = hosts * n.t.bridges;
 
   // Link hosts to bridges
 
-  n.t.hostLinks[0] = 0;
-  n.t.hostLinks[1] = 1;
-  n.t.hostLinks[2] = 2; 
-  n.t.hostLinks[3] = 3;
+  long i, j;
 
-  // Link the two bridges together
+  for(i = 0; i < n.t.bridges; ++i){
+     for(j = 0; j < hosts; ++j){
+         n.t.hostLinks[(i*hosts) + j] = i;
+     }
+  }
+
+  // Link the bridges together
  
   n.t.bridgeLinks.insert(std::make_pair<long,long>(0,1));
   n.t.bridgeLinks.insert(std::make_pair<long,long>(0,2));
@@ -103,15 +108,13 @@ int main (int argc, char *argv[])
 
   uint16_t port = 9;   // Discard port (RFC 863)
 
-  int i,j;
-
   // 0->1, 0->2, 0->3, 1->0, 1->2, 1->3, 2->0, 2->1, 2->3, 3->0, 3->1, 3->2
 
   NodeContainer serverNodes;
 
-  for(i = 0; i < 4; ++i){
+  for(i = 0; i < n.t.hosts; ++i){
 
-    for(j = 0; j < 4; ++j){
+    for(j = 0; j < n.t.hosts; ++j){
 
 	if(i != j){		
 
