@@ -21,7 +21,7 @@
 #include "topology.h"
 #include "ns3/log.h"
 
-NS_LOG_COMPONENT_DEFINE ("MooseHelper");
+NS_LOG_COMPONENT_DEFINE ("Topology");
 
 namespace ns3 {
 
