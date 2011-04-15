@@ -16,31 +16,16 @@
  * Author: Richard Whitehouse <ns3@richardwhiuk.com>
  */
 
-// Topology
-//
-//       H0                 H1
-//       |		    |
-//  ------------      ------------
-//  | Switch 0 |------| Switch 1 |
-//  ------------      ------------
-//       |                  |
-//  ------------      ------------
-//  | Switch 2 |------| Switch 3 |
-//  ------------      ------------
-//       |		    |
-//       H2		    H3
-//
-// - 100 Mb/s
-// - CBR/UDP flows from Host (h) 0 to Host 1 and then from Host 0 to Host 2
-// - DropTail queues
-
 #include "ns3/simulator-module.h"
 #include "ns3/node-module.h"
 #include "ns3/core-module.h"
 #include "ns3/helper-module.h"
 #include "ns3/bridge-module.h"
+#include "ns3/topology-module.h"
 
 #include <iostream>
+#include <cstdlib>
+#include <ctime>
 
 using namespace ns3;
 
@@ -52,12 +37,37 @@ int main (int argc, char *argv[])
   bool useMoose = true;
   std::string tracefile = "simulation.tr";
   long hosts = 1;
+  long size = 2;
+  std::string type = "mesh";
+  long seed = 0;
+  long link = 2;
+
+  seed = std::time(NULL);
 
   CommandLine cmd;			// Allow CommandLine args
   cmd.AddValue("moose", "Use MOOSE instead of Ethernet? [true]", useMoose);
   cmd.AddValue("trace", "Trace file output [simulation.tr]", tracefile);
+  cmd.AddValue("type", "Network type? [mesh]", type);
+  cmd.AddValue("size", "Network size [2]", size);
   cmd.AddValue("hosts", "Number of hosts per switch [1]", hosts);
+  cmd.AddValue("seed", "Random seed" , seed);
+  cmd.AddValue("link", "Probability of link 1/[2]" , link);
   cmd.Parse (argc, argv);
+
+  std::srand(seed);
+
+  Topology t;
+
+  if(type == "mesh"){
+      
+	t = MeshTopologyHelper::Create(hosts, size);
+
+  } else {
+
+	std::cerr << "Unknown Network Type [" << type << "]" << std::endl;
+	return 1;	
+
+  }
 
   // Moose Helper
 
@@ -71,34 +81,7 @@ int main (int argc, char *argv[])
 
   // Setup Network
 
-  MooseHelper::Network n;
-
-  NS_LOG_INFO ("Configure Topology.");
-
-  n.t.bridges = 4;
-  n.t.hosts = hosts * n.t.bridges;
-
-  // Link hosts to bridges
-
-  long i, j;
-
-  for(i = 0; i < n.t.bridges; ++i){
-     for(j = 0; j < hosts; ++j){
-         n.t.hostLinks[(i*hosts) + j] = i;
-     }
-  }
-
-  // Link the bridges together
- 
-  n.t.bridgeLinks.insert(std::make_pair<long,long>(0,1));
-  n.t.bridgeLinks.insert(std::make_pair<long,long>(0,2));
-  n.t.bridgeLinks.insert(std::make_pair<long,long>(1,3));
-  n.t.bridgeLinks.insert(std::make_pair<long,long>(2,3));
-
-  // Create Network
-
-  moose.Create(n);
-
+  MooseHelper::Network n = moose.Create(t);
 
   //
   // Create UDP Applications to send the two packets
@@ -108,25 +91,27 @@ int main (int argc, char *argv[])
 
   uint16_t port = 9;   // Discard port (RFC 863)
 
-  // 0->1, 0->2, 0->3, 1->0, 1->2, 1->3, 2->0, 2->1, 2->3, 3->0, 3->1, 3->2
-
   NodeContainer serverNodes;
 
-  for(i = 0; i < n.t.hosts; ++i){
+  long i, j;
 
-    for(j = 0; j < n.t.hosts; ++j){
+  for(i = 0; i < t.hosts; ++i){
+
+    for(j = 0; j < t.hosts; ++j){
 
 	if(i != j){		
 
-  	   UdpClientHelper udpClientHelper (n.interfaces[j].GetAddress(0), port);		// i->j
-  	   udpClientHelper.SetAttribute ("MaxPackets", UintegerValue (1));
+	   //if((rand() % link) == 0){
 
-  	   ApplicationContainer udpClient = udpClientHelper.Install (n.hosts.Get(i));
+	  	   UdpClientHelper udpClientHelper (n.interfaces[i].GetAddress(0), port);		// j->i
+  		   udpClientHelper.SetAttribute ("MaxPackets", UintegerValue (1));
 
-           int start = i*4 + j; 
+	  	   ApplicationContainer udpClientA = udpClientHelper.Install (n.hosts.Get(j));
 
-  	   udpClient.Start (Seconds (start));
-  	   udpClient.Stop  (Seconds (start + 1));
+	  	   udpClientA.Start (Seconds ((i*t.hosts) + j));
+  		   udpClientA.Stop  (Seconds ((i*t.hosts) + j + 1));
+
+	  // }
 	}
      }
 
@@ -143,12 +128,16 @@ int main (int argc, char *argv[])
   NS_LOG_INFO ("Configure Tracing.");
 
   AsciiTraceHelper ascii;
-  moose.csma.EnableAsciiAll (ascii.CreateFileStream (tracefile));
+  Ptr<OutputStreamWrapper> stream = ascii.CreateFileStream (tracefile);
+  moose.csma.EnableAsciiAll(stream);
+ // moose.internet.EnableAsciiIpv4All(stream);
 
   NS_LOG_INFO ("Run Simulation.");
   Simulator::Run ();
   Simulator::Destroy ();
   NS_LOG_INFO ("Done.");
+
+  return 0;
 
 }
 
