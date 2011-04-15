@@ -14,6 +14,7 @@ def build(bld):
     headers = bld.new_task_gen('ns3header')
     headers.module = 'bridge'
     headers.source = [
+	'model/bpdu-header.h',
         'model/moose-bridge-port-net-device.h',
 	'model/moose-bridge-net-device.h',
         'model/bridge-net-device.h',
