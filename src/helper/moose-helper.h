@@ -48,15 +48,13 @@ class MooseHelper {
 
 public:
 
-	typedef boost::adjacency_list< boost::listS, boost::vecS, boost::undirectedS, boost::no_property, boost::property<boost::edge_weight_t, int> > graph_t;
+	typedef boost::adjacency_list< boost::listS, boost::vecS, boost::undirectedS, boost::no_property, boost::property<boost::edge_weight_t, long> > graph_t;
 
 	typedef boost::graph_traits< graph_t >::vertex_descriptor vertex_descriptor;
 	typedef boost::graph_traits< graph_t >::edge_descriptor edge_descriptor;
 	
 	struct Network {
 		
-		Topology t;
-
 		// Contains all the nodes :-)
 
 		NodeContainer bridges;
@@ -69,7 +67,7 @@ public:
 
 		// IP Interfaces
 
-		std::map<long, Ipv4InterfaceContainer> interfaces;
+		std::map<long, Ipv4InterfaceContainer > interfaces;
 
 	};
 
@@ -91,7 +89,7 @@ public:
 
 	void DisableDynamicRouting();
 
-	void Create(Network& t);
+	Network Create(Topology& t);
 
 private:
 

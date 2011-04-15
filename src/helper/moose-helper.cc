@@ -71,12 +71,14 @@ void MooseHelper::DisableDynamicRouting(){
 	routing = true;
 }
 
-void MooseHelper::Create(MooseHelper::Network& n){
+MooseHelper::Network MooseHelper::Create(Topology& t){
 
 	// Create the bridges and hosts
 
-	n.bridges.Create(n.t.bridges);
-	n.hosts.Create(n.t.hosts);
+	Network n;
+
+	n.bridges.Create(t.bridges);
+	n.hosts.Create(t.hosts);
 
 	std::map<long, std::map<long, Ptr<NetDevice> > > portMap;
 
@@ -85,17 +87,17 @@ void MooseHelper::Create(MooseHelper::Network& n){
 	// Host-Bridge
 
 	for(
-		Topology::HostLinks::iterator it = n.t.hostLinks.begin(); 
-		it != n.t.hostLinks.end(); 
+		Topology::HostLinks::iterator it = t.hostLinks.begin(); 
+		it != t.hostLinks.end(); 
 		it ++){
 
 		NodeContainer nc;
 		
-		if(it->first >= n.t.hosts){
+		if(it->first >= t.hosts){
 			assert(false);
 		}
 
-		if(it->second >= n.t.bridges){
+		if(it->second >= t.bridges){
 			assert(false);
 		}
 
@@ -111,17 +113,17 @@ void MooseHelper::Create(MooseHelper::Network& n){
 	// Bridge-Bridge 
 
 	for(
-		Topology::BridgeLinks::iterator it = n.t.bridgeLinks.begin(); 
-		it != n.t.bridgeLinks.end(); 
+		Topology::BridgeLinks::iterator it = t.bridgeLinks.begin(); 
+		it != t.bridgeLinks.end(); 
 		it ++){
 
 		NodeContainer nc;
 		
-		if(it->first >= n.t.bridges){
+		if(it->first >= t.bridges){
 			assert(false);
 		}
 
-		if(it->second >= n.t.bridges){
+		if(it->second >= t.bridges){
 			assert(false);
 		}
 
@@ -149,14 +151,14 @@ void MooseHelper::Create(MooseHelper::Network& n){
 
 			// Djkstra - Give all links the same weight for now.
 
-			std::vector<long> weights(n.t.bridgeLinks.size(), 1);
+			std::vector<long> weights(t.bridgeLinks.size(), 1);
 
-			const long num_nodes = n.t.bridges;
+			const long num_nodes = t.bridges;
 
-			graph_t g(n.t.bridgeLinks.begin(), n.t.bridgeLinks.end(), weights.begin(), num_nodes);
+			graph_t g(t.bridgeLinks.begin(), t.bridgeLinks.end(), weights.begin(), num_nodes);
 			boost::property_map<graph_t, boost::edge_weight_t>::type weightmap = get(boost::edge_weight, g);
 
-			for(long root = 0; root < n.t.bridges; root ++){
+			for(long root = 0; root < t.bridges; root ++){
 
 				std::vector<vertex_descriptor> p(num_vertices(g));
 				vertex_descriptor s = boost::vertex(root,g);
@@ -198,7 +200,7 @@ void MooseHelper::Create(MooseHelper::Network& n){
 
 			// Realtime routing
 
-			for(long i = 0; i < n.t.bridges; i ++){
+			for(long i = 0; i < t.bridges; i ++){
 				Ptr<Node> bridgeNode = n.bridges.Get(i);
 				mooseHelper.Install(bridgeNode, n.bridgeDevices[i]);
 			}
@@ -208,21 +210,20 @@ void MooseHelper::Create(MooseHelper::Network& n){
 
 			// Kruskall's - Give all links the same weight for now.
 
-			const long num_nodes = n.t.bridges;
+			const long num_nodes = t.bridges;
 
 			std::vector<edge_descriptor> tree;
 
-			std::vector<long> weights(n.t.bridgeLinks.size(), 1);
+			std::vector<long> weights(t.bridgeLinks.size(), 1);
 
-			graph_t g(n.t.bridgeLinks.begin(), n.t.bridgeLinks.end(), weights.begin(), num_nodes);
-			boost::property_map<graph_t, boost::edge_weight_t>::type weightmap = get(boost::edge_weight, g);
+			graph_t g(t.bridgeLinks.begin(), t.bridgeLinks.end(), weights.begin(), num_nodes);
 
 			kruskal_minimum_spanning_tree(g,std::back_inserter(tree));
 
 			std::map<long,std::map<long,bool> > spanning;
 
-			for(long i = 0; i < n.t.bridges; ++i){
-				for(long j = 0; i < n.t.bridges; ++i){
+			for(long i = 0; i < t.bridges; ++i){
+				for(long j = 0; i < t.bridges; ++i){
 					spanning[i][j] = false;
 				}
 			}
@@ -238,7 +239,8 @@ void MooseHelper::Create(MooseHelper::Network& n){
 
 			// Question: is bridge[0][1] in spanning tree? -> i.e. is there some x, for which tree[x] = <0,1>
 
-			for(long i = 0; i < n.t.bridges; i ++){
+
+			for(long i = 0; i < t.bridges; i ++){
 
 				std::map<Ptr<NetDevice>, bool> portsEnabled;
 
@@ -255,7 +257,7 @@ void MooseHelper::Create(MooseHelper::Network& n){
 		} else {
 			// Requires STP implementation
 
-			for(long i = 0; i < n.t.bridges; i ++){
+			for(long i = 0; i < t.bridges; i ++){
 
 				Ptr<Node> bridgeNode = n.bridges.Get(i);
 				ethernetHelper.Install(bridgeNode, n.bridgeDevices[i]);
@@ -267,9 +269,11 @@ void MooseHelper::Create(MooseHelper::Network& n){
 
 	internet.Install(n.hosts);
 
-	for(long i = 0; i < n.t.hosts; i ++){
+	for(long i = 0; i < t.hosts; i ++){
 		n.interfaces[i] = ipv4.Assign(n.hostDevices[i]);
 	}
+
+	return n;
 
 }
 
