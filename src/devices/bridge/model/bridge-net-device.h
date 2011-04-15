@@ -100,6 +100,11 @@ public:
   virtual Address GetAddress (void) const;
   virtual bool SetMtu (const uint16_t mtu);
   virtual uint16_t GetMtu (void) const;
+
+  virtual bool SetMaxStateSize (const unsigned long maxStateSize );
+  virtual unsigned long GetMaxStateSize (void) const;
+  virtual unsigned long GetStateSize (void) const;
+
   virtual bool IsLinkUp (void) const;
   virtual void AddLinkChangeCallback (Callback<void> callback);
   virtual bool IsBroadcast (void) const;
@@ -150,6 +155,7 @@ private:
   uint16_t mPortNumber;
   uint32_t m_ifIndex;
   uint16_t m_mtu;
+  unsigned long m_maxStateSize;
   bool m_enableLearning;
 
 };

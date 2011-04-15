@@ -42,7 +42,12 @@ BridgeNetDevice::GetTypeId (void)
                    UintegerValue (1500),
                    MakeUintegerAccessor (&BridgeNetDevice::SetMtu,
                                          &BridgeNetDevice::GetMtu),
-                   MakeUintegerChecker<uint16_t> ())                   
+                   MakeUintegerChecker<uint16_t> ())    
+    .AddAttribute ("StateSize", "The size of the State Table",
+                   UintegerValue (8000),
+                   MakeUintegerAccessor (&BridgeNetDevice::SetStateSize,
+                                         &BridgeNetDevice::GetStateSize),
+                   MakeUintegerChecker<unsigned long> ())                  
     .AddAttribute ("EnableLearning",
                    "Enable the learning mode of the Learning Bridge",
                    BooleanValue (true),
@@ -50,7 +55,7 @@ BridgeNetDevice::GetTypeId (void)
                    MakeBooleanChecker ())
     .AddAttribute ("ExpirationTime",
                    "Time it takes for learned MAC state entry to expire.",
-                   TimeValue (Seconds (30)),
+                   TimeValue (Seconds (300)),
                    MakeTimeAccessor (&BridgeNetDevice::m_expirationTime),
                    MakeTimeChecker ())
     ;
@@ -177,9 +182,12 @@ void BridgeNetDevice::Learn (Address const &src, Ptr<BridgePortNetDevice> port)
 
   if (m_enableLearning)
     {
-      LearnedState &state = m_learnState[src48];
-      state.associatedPort = port;
-      state.expirationTime = Simulator::Now () + m_expirationTime;
+	std::map<Mac48Address, LearnedState>::iterator it = m_learnState.find(src48);
+	if(it != m_learnState.end() || m_learnState.size() < m_maxStateSize){
+	      LearnedState &state = m_learnState[src48];
+	      state.associatedPort = port;
+      	      state.expirationTime = Simulator::Now () + m_expirationTime;
+	}
     }
 }
 
@@ -301,6 +309,27 @@ BridgeNetDevice::GetMtu (void) const
   return m_mtu;
 }
 
+bool 
+BridgeNetDevice::SetMaxStateSize (const unsigned long maxStateSize )
+{
+  NS_LOG_FUNCTION_NOARGS ();
+  m_maxStateSize = maxStateSize ;
+  return true;
+}
+
+unsigned long 
+BridgeNetDevice::GetMaxStateSize (void) const
+{
+  NS_LOG_FUNCTION_NOARGS ();
+  return m_maxStateSize;
+}
+
+unsigned long 
+BridgeNetDevice::GetStateSize (void) const
+{
+  NS_LOG_FUNCTION_NOARGS ();
+  return m_learnState.size();
+}
 
 bool 
 BridgeNetDevice::IsLinkUp (void) const
