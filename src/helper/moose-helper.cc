@@ -36,7 +36,7 @@ MooseHelper::MooseHelper(){
 
 	// Medium
 
-	csma.SetChannelAttribute ("DataRate", DataRateValue (5000000));
+	csma.SetChannelAttribute ("DataRate", DataRateValue (DataRate("1Gbps")));
 	csma.SetChannelAttribute ("Delay", TimeValue (MilliSeconds (2)));
 
 	// Internet
