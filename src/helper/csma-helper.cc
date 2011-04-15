@@ -195,7 +195,7 @@ CsmaHelper::EnableAsciiInternal (
   uint32_t deviceid = nd->GetIfIndex ();
   std::ostringstream oss;
 
-  oss << "/NodeList/" << nd->GetNode ()->GetId () << "/DeviceList/" << deviceid << "/$ns3::CsmaNetDevice/MacRx";
+  oss << "/NodeList/" << nodeid << "/DeviceList/" << deviceid << "/$ns3::CsmaNetDevice/MacRx";
   Config::Connect (oss.str (), MakeBoundCallback (&AsciiTraceHelper::DefaultReceiveSinkWithContext, stream));
 
   oss.str ("");
