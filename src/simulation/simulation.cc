@@ -68,11 +68,11 @@ void setup(LinkLayerHelper::Network& n, Topology& t, std::istream& file){
 
 		if(file.good()){
 
-			if(source > t.hosts){
+			if(source >= t.hosts){
 				throw new std::runtime_error("Invalid Source in Network Data");
 			}
 
-			if(destination > t.hosts){
+			if(destination >= t.hosts){
 				throw new std::runtime_error("Invalid Destination in Network Data");
 			}
 
