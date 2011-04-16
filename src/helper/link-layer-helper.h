@@ -44,7 +44,7 @@ namespace ns3 {
  * 
  * \brief Helper to create Ethernet / MOOSE bridged networks
  */
-class MooseHelper {
+class LinkLayerHelper {
 
 public:
 
@@ -77,13 +77,13 @@ public:
 	MooseBridgeHelper mooseHelper;
 	BridgeHelper ethernetHelper;
 
-	MooseHelper();
+	LinkLayerHelper();
 
-	~MooseHelper();
+	~LinkLayerHelper();
 
-	void SetMoose();
+	bool SupportsLinkLayer(std::string linkLayer);
 
-	void SetEthernet();
+	void SetLinkLayer(std::string linkLayer);
 
 	void EnableDynamicRouting();
 

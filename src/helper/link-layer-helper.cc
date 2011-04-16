@@ -20,18 +20,18 @@
 
 #include <boost/graph/dijkstra_shortest_paths.hpp>
 #include <boost/graph/kruskal_min_spanning_tree.hpp>
-#include "moose-helper.h"
+#include "link-layer-helper.h"
 #include "ns3/moose-prefix-address.h"
 #include "ns3/log.h"
 
 #include <vector>
 #include <algorithm>
 
-NS_LOG_COMPONENT_DEFINE ("MooseHelper");
+NS_LOG_COMPONENT_DEFINE ("LinkLayerHelper");
 
 namespace ns3 {
 
-MooseHelper::MooseHelper(){
+LinkLayerHelper::LinkLayerHelper(){
 	// Sensible defaults.
 
 	// Medium
@@ -51,27 +51,34 @@ MooseHelper::MooseHelper(){
 	routing = true; 	// Simulation based routing
 }
 
-MooseHelper::~MooseHelper(){
+LinkLayerHelper::~LinkLayerHelper(){
 
 }
 
-void MooseHelper::SetMoose(){
-	moose = true;
+bool LinkLayerHelper::SupportsLinkLayer(std::string linkLayer){
+	if(linkLayer == "moose" || linkLayer == "ethernet"){
+		return true;
+	}
+	return false;
 }
 
-void MooseHelper::SetEthernet(){
-	moose = false;
+void LinkLayerHelper::SetLinkLayer(std::string linkLayer){
+	if(linkLayer == "moose"){
+		moose = true;
+	} else if(linkLayer == "ethernet"){
+		moose = false;
+	}
 }
 
-void MooseHelper::EnableDynamicRouting(){
+void LinkLayerHelper::EnableDynamicRouting(){
 	routing = false;
 }	
 
-void MooseHelper::DisableDynamicRouting(){
+void LinkLayerHelper::DisableDynamicRouting(){
 	routing = true;
 }
 
-MooseHelper::Network MooseHelper::Create(Topology& t){
+LinkLayerHelper::Network LinkLayerHelper::Create(Topology& t){
 
 	// Create the bridges and hosts
 
