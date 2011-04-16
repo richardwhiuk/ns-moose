@@ -108,7 +108,7 @@ int main (int argc, char *argv[])
 
 try {
 
-	std::string csmaTraceFile;
+	std::string csmaTraceFile, pcapTraceFile;
 	std::string ipTraceFile;
 	std::string networkFile;
 	std::string dataFile;
@@ -117,6 +117,7 @@ try {
 	CommandLine cmd;			// Allow CommandLine args
 	cmd.AddValue("link", "Link Layer? (moose|ethernet) [moose]", linkLayer);
 	cmd.AddValue("csma", "CSMA Trace File", csmaTraceFile);
+	cmd.AddValue("pcap", "CSMA PCAP Trace File", pcapTraceFile);
 	cmd.AddValue("ip", "IPv4 Trace File", ipTraceFile);
 	cmd.AddValue("network", "Network Topology File", networkFile);
 	cmd.AddValue("data", "Network Data File", dataFile);
@@ -183,6 +184,10 @@ try {
 			Ptr<OutputStreamWrapper> stream = ascii.CreateFileStream (ipTraceFile);
 			link.internet.EnableAsciiIpv4All(stream);
 		}
+	}
+
+	if(pcapTraceFile != ""){
+		link.csma.EnablePcapAll(pcapTraceFile, true);
 	}
 
 
