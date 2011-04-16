@@ -19,13 +19,13 @@
  */
 
 #include <boost/graph/dijkstra_shortest_paths.hpp>
-#include <boost/graph/kruskal_min_spanning_tree.hpp>
 #include "link-layer-helper.h"
 #include "ns3/moose-prefix-address.h"
 #include "ns3/log.h"
 
 #include <vector>
 #include <algorithm>
+#include <queue>
 
 NS_LOG_COMPONENT_DEFINE ("LinkLayerHelper");
 
@@ -215,29 +215,65 @@ LinkLayerHelper::Network LinkLayerHelper::Create(Topology& t){
 	} else {
 		if(routing){
 
-			// Kruskall's - Give all links the same weight for now.
+			// STP doesn't do a Minimum Spanning Tree, it does a minimum tree based on the root node.
 
-			const long num_nodes = t.bridges;
+			// Since all links are 1, we can do this in a very simple manner
 
-			std::vector<edge_descriptor> tree;
+			// We assume a connected network - possibly incorrectly.
 
-			std::vector<long> weights(t.bridgeLinks.size(), 1);
+			Topology::BridgeLinks links(t.bridgeLinks);
+			std::map<unsigned long, std::map<unsigned long, bool> > spanning;
 
-			graph_t g(t.bridgeLinks.begin(), t.bridgeLinks.end(), weights.begin(), num_nodes);
+			std::queue<unsigned long> toCheck; // Nodes to check
+			std::map<unsigned long, bool> inTree; // In the tree?
 
-			kruskal_minimum_spanning_tree(g,std::back_inserter(tree));
-
-			std::map<long,std::map<long,bool> > spanning;
-
-			for(long i = 0; i < t.bridges; ++i){
-				for(long j = 0; i < t.bridges; ++i){
+			for(unsigned long i = 0; i < t.bridges; ++i){
+				inTree[i] = false;
+				for(unsigned long j = 0; j < t.bridges; ++j){
 					spanning[i][j] = false;
 				}
 			}
 
-			for(std::vector<edge_descriptor>::iterator it = tree.begin(); it != tree.end(); ++it){
-				spanning[source(*it,g)][target(*it,g)] = true;
-				spanning[target(*it,g)][source(*it,g)] = true;
+			bool finished = false;
+
+			unsigned long node = 1;
+			unsigned long number = 1;
+
+			while(!finished){
+				Topology::BridgeLinks::iterator it = links.begin();
+				while(it != t.bridgeLinks.end()){
+					if(it->first == node){
+						if(!inTree[it->second]){
+							spanning[node][it->second] = true;
+							spanning[it->second][node] = true;
+							toCheck.push(it->second);
+							number++;
+						}
+						Topology::BridgeLinks::iterator er = it;
+						++it;
+						links.erase(it);
+					} else if(it->second == node){
+						if(!inTree[it->first]){
+							spanning[node][it->first] = true;
+							spanning[it->first][node] = true;
+							toCheck.push(it->first);
+							number ++;
+						}
+						Topology::BridgeLinks::iterator er = it;
+						++it;
+						links.erase(it);
+					} else {
+						++it;
+					}
+				}
+				if(number == t.bridges){
+					finished = true;
+				} else if(toCheck.size() == 0){
+					finished = true;
+				} else {
+					node = toCheck.front();
+					toCheck.pop();
+				}
 			}
 
 			// Disable the other ports not included.
