@@ -98,20 +98,44 @@ Topology::~Topology(){
 }
 
 bool Topology::BridgeLinkCompare::operator()( BridgeLink const &lhs, BridgeLink const &rhs) {
-	if(lhs.first < lhs.first){
+	if(lhs.first < lhs.second){
 		if(rhs.first < rhs.second){
-			return (lhs.first < rhs.first) ? true : (lhs.second < rhs.second);
+			if(lhs.first < rhs.first){
+				return true;
+			} else if(rhs.first < lhs.first){
+				return false;
+			} else {
+				return lhs.second < rhs.second;
+			}
 		} else {
-			return (lhs.first < rhs.second) ? true : (lhs.second < rhs.first);
+			if(lhs.first < rhs.second){
+				return true;
+			} else if(rhs.second < lhs.first){
+				return false;
+			} else {
+				return lhs.second < rhs.first;
+			}
 		}
 	} else {
 		if(rhs.first < rhs.second){
-			return (lhs.second < rhs.first) ? true : (lhs.first < rhs.second);
+			if(lhs.second < rhs.first){
+				return true;
+			} else if(rhs.first < lhs.second){
+				return false;
+			} else {
+				return lhs.first < rhs.second;
+			}
 		} else {
-			return (lhs.second < rhs.second) ? true : (lhs.first < rhs.first);
+			if(lhs.second < rhs.second){
+				return true;
+			} else if(rhs.second < lhs.second){
+				return false;
+			} else {
+				return lhs.first < rhs.first;
+			}
 		}
 	}
 }
 
-
 }
+
