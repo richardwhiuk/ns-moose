@@ -236,32 +236,35 @@ LinkLayerHelper::Network LinkLayerHelper::Create(Topology& t){
 
 			bool finished = false;
 
-			unsigned long node = 1;
+			unsigned long node = 0;
 			unsigned long number = 1;
 
 			while(!finished){
 				Topology::BridgeLinks::iterator it = links.begin();
-				while(it != t.bridgeLinks.end()){
+				while(it != links.end()){
+
 					if(it->first == node){
 						if(!inTree[it->second]){
 							spanning[node][it->second] = true;
 							spanning[it->second][node] = true;
+							inTree[it->second] = true;
 							toCheck.push(it->second);
 							number++;
 						}
 						Topology::BridgeLinks::iterator er = it;
 						++it;
-						links.erase(it);
+						links.erase(er);
 					} else if(it->second == node){
 						if(!inTree[it->first]){
 							spanning[node][it->first] = true;
 							spanning[it->first][node] = true;
+							inTree[it->second] = true;
 							toCheck.push(it->first);
 							number ++;
 						}
 						Topology::BridgeLinks::iterator er = it;
 						++it;
-						links.erase(it);
+						links.erase(er);
 					} else {
 						++it;
 					}
