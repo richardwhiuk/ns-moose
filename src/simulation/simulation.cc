@@ -171,7 +171,7 @@ try {
 
 	NS_LOG_INFO ("Configure Tracing");
 
-	if(csmaTraceFile != "" && ipTraceFile != ""){
+	if(csmaTraceFile != "" || ipTraceFile != ""){
 		AsciiTraceHelper ascii;
 
 		if(csmaTraceFile != ""){
