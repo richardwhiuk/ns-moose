@@ -91,8 +91,6 @@ Topology::Topology(std::istream& file){
 		}
 	}
 
-	std::cout << "Valid Network Topology File" << std::endl;
-
 }
 
 Topology::~Topology(){
