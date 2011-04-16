@@ -21,9 +21,83 @@
 #include "topology.h"
 #include "ns3/log.h"
 
+#include <stdexcept>
+
 NS_LOG_COMPONENT_DEFINE ("Topology");
 
 namespace ns3 {
+
+Topology::Topology(){
+
+}
+
+Topology::Topology(std::istream& file){
+
+	std::string line;
+
+	std::getline(file, line);
+	if(line != "ns-moose"){
+		throw new std::runtime_error("Invalid Network Topology File");
+	}
+
+	unsigned long type;
+	file >> type;
+	if(type != 1){
+		throw new std::runtime_error("Invalid Network Topology File Type");
+	}
+
+	unsigned long version;
+	file >> version;
+	if(version != 1){
+		throw new std::runtime_error("Invalid Network Topology File Version");
+	}
+
+	file >> hosts;
+	if(hosts < 1){
+		throw new std::runtime_error("Network Topology contains no hosts.");
+	}
+
+	file >> bridges;
+	if(bridges < 1){
+		throw new std::runtime_error("Network Topology contains no bridges.");
+	}
+
+	while(file.good() && !file.eof()){
+		unsigned long source;
+		unsigned long destination;
+		file >> source;
+		file >> destination;
+		if(file.good()){
+			if(source > bridges){				// Source is a host
+				source -= bridges;
+				if(source > hosts){
+					throw new std::runtime_error("Invalid Link in Topology");
+				}
+				if(destination > bridges){		// Dest is a host
+					throw new std::runtime_error("Host-Host Link in Topology");
+				}
+				hostLinks[source] = destination;
+			} else {					// Source is a bridge
+				if(destination > bridges){		// Source is a host
+					destination -= bridges;
+					if(destination > hosts){
+						throw new std::runtime_error("Invalid Host Link");
+					}
+					hostLinks[destination] = source;
+				} else {
+					bridgeLinks.insert(Topology::BridgeLink(source, destination));
+				}
+			}
+		}
+	}
+
+	std::cout << "Valid Network Topology File" << std::endl;
+
+}
+
+Topology::~Topology(){
+
+}
 
 bool Topology::BridgeLinkCompare::operator()( BridgeLink const &lhs, BridgeLink const &rhs) {
 	if(lhs.first < lhs.first){
