@@ -68,19 +68,19 @@ Topology::Topology(std::istream& file){
 		file >> source;
 		file >> destination;
 		if(file.good()){
-			if(source > bridges){				// Source is a host
+			if(source >= bridges){				// Source is a host
 				source -= bridges;
-				if(source > hosts){
+				if(source >= hosts){
 					throw new std::runtime_error("Invalid Link in Topology");
 				}
-				if(destination > bridges){		// Dest is a host
+				if(destination >= bridges){		// Dest is a host
 					throw new std::runtime_error("Host-Host Link in Topology");
 				}
 				hostLinks[source] = destination;
 			} else {					// Source is a bridge
-				if(destination > bridges){		// Source is a host
+				if(destination >= bridges){		// Source is a host
 					destination -= bridges;
-					if(destination > hosts){
+					if(destination >= hosts){
 						throw new std::runtime_error("Invalid Host Link");
 					}
 					hostLinks[destination] = source;
