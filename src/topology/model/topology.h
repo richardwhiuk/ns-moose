@@ -60,6 +60,8 @@ public:
 
 };
 
+std::ostream& operator<<(std::ostream&, ns3::Topology);
+
 }
 
 #endif

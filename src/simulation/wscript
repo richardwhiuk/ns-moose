@@ -10,6 +10,12 @@ def build(bld):
     headers.module = 'simulation'
     headers.source = []	
 
+
+    obj = bld.create_ns3_program('generator', ['bridge', 'internet-stack'])
+
+    obj.source = 'generator.cc'
+
+
     obj = bld.create_ns3_program('simulation', ['bridge', 'internet-stack'])
 
     obj.source = 'simulation.cc'

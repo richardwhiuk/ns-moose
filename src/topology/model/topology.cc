@@ -27,6 +27,21 @@ NS_LOG_COMPONENT_DEFINE ("Topology");
 
 namespace ns3 {
 
+std::ostream& operator<<(std::ostream& file, ns3::Topology t){
+	file << "ns-moose" << std::endl;
+	file << 1 << std::endl;
+	file << 1 << std::endl;
+	file << t.hosts << std::endl;
+	file << t.bridges << std::endl;
+	for(Topology::BridgeLinks::iterator it = t.bridgeLinks.begin(); it != t.bridgeLinks.end(); it ++){
+		file << it->first << '\t' << it->second << std::endl;
+	}
+	for(Topology::HostLinks::iterator it = t.hostLinks.begin(); it != t.hostLinks.end(); it ++){
+		file << (it->first + t.bridges) << '\t' << it->second << std::endl;
+	}
+	return file;
+}
+
 Topology::Topology(){
 
 }
