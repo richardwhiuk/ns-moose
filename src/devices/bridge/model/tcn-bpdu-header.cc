@@ -30,7 +30,7 @@ NS_OBJECT_ENSURE_REGISTERED(TcnBpduHeader);
 TypeId TcnBpduHeader::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::TcnBpduHeader")
-    .SetParent<BpduHeader> ()
+    .SetParent<Header> ()
     .AddConstructor<TcnBpduHeader> ()
     ;
   return tid;

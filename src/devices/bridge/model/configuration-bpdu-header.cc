@@ -105,7 +105,7 @@ void ConfigurationBpduHeader::SetForwardDelay(uint16_t forwardDelay){
 TypeId ConfigurationBpduHeader::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::ConfigurationBpduHeader")
-    .SetParent<BpduHeader> ()
+    .SetParent<Header> ()
     .AddConstructor<ConfigurationBpduHeader> ()
     ;
   return tid;
