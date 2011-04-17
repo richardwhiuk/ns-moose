@@ -10,7 +10,8 @@ def build(bld):
         'model/bridge-channel.cc',
 	'helper/moose-bridge-helper.cc',
         'helper/bridge-helper.cc',
-	'model/bpdu-header.cc'
+	'model/bpdu-header.cc',
+	'model/configuration-bpdu-header.cc',
         ]
     headers = bld.new_task_gen('ns3header')
     headers.module = 'bridge'
