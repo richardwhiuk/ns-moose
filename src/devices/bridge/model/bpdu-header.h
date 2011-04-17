@@ -22,8 +22,6 @@
 #define BRIDGE_BPDU_HEADER_H
 
 #include "ns3/header.h"
-#include "ns3/address.h"
-#include "ns3/ipv4-address.h"
 #include <string>
 
 namespace ns3 {
@@ -36,26 +34,26 @@ class BpduHeader : public Header {
 
 public:
 
-	uint16_t getProtocol();
-	uint8_t getVersion();
-	uint8_t getType();
+	uint16_t GetProtocol();
+	uint8_t GetVersion();
+	uint8_t GetType();
 
-	void setProtocol(uint16_t);
-	void setVersion(uint8_t);
-	void setType(uint8_t);
+	void SetProtocol(uint16_t);
+	void SetVersion(uint8_t);
+	void SetType(uint8_t);
 
-  static TypeId GetTypeId (void);
-  virtual TypeId GetInstanceTypeId (void) const;
-  virtual void Print (std::ostream &os) const;
-  virtual uint32_t GetSerializedSize (void) const;
-  virtual void Serialize (Buffer::Iterator start) const;
-  virtual uint32_t Deserialize (Buffer::Iterator start);
+	static TypeId GetTypeId (void);
+	virtual TypeId GetInstanceTypeId (void) const;
+	virtual void Print (std::ostream &os) const;
+	virtual uint32_t GetSerializedSize (void) const;
+	virtual void Serialize (Buffer::Iterator start) const;
+	virtual uint32_t Deserialize (Buffer::Iterator start);
 
-private;
+private:
 
-	uint16_t protocolIdentifier;
-	uint8_t versionIdentifier;
-	uint8_t bpduType;
+	uint16_t m_protocolIdentifier;
+	uint8_t m_versionIdentifier;
+	uint8_t m_bpduType;
 
 
 };
@@ -69,9 +67,6 @@ private;
 class ConfigurationBpduHeader : public Header {
 
 public:
-
-  
-
 
   static TypeId GetTypeId (void);
   virtual TypeId GetInstanceTypeId (void) const;
@@ -112,6 +107,7 @@ class RstBpduHeader : public Header {
 
 };
 
+}
 
 #endif
 
