@@ -22,6 +22,7 @@
 #define BRIDGE_BPDU_HEADER_H
 
 #include "ns3/header.h"
+#include "ns3/mac48-address.h"
 #include <string>
 
 namespace ns3 {
@@ -56,6 +57,11 @@ private:
 	uint8_t m_bpduType;
 
 
+};
+
+struct BpduBridgeIdentifier {
+	uint16_t priority;
+	Mac48Address address;
 };
 
 /**
