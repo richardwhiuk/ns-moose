@@ -21,6 +21,7 @@
 #ifndef TOPOLOGY_H
 #define TOPOLOGY_H
 
+#include <fstream>
 #include <map>
 #include <set>
 
@@ -35,6 +36,11 @@ namespace ns3 {
 struct Topology {
 	
 public:
+
+	Topology();
+	Topology(std::istream& file);
+	~Topology();
+
 	long bridges;
 	long hosts;
 	typedef std::map<long,long> HostLinks;
@@ -53,6 +59,8 @@ public:
 	BridgeLinks bridgeLinks;
 
 };
+
+std::ostream& operator<<(std::ostream&, ns3::Topology);
 
 }
 

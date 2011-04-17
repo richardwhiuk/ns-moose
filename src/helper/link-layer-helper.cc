@@ -19,19 +19,19 @@
  */
 
 #include <boost/graph/dijkstra_shortest_paths.hpp>
-#include <boost/graph/kruskal_min_spanning_tree.hpp>
-#include "moose-helper.h"
+#include "link-layer-helper.h"
 #include "ns3/moose-prefix-address.h"
 #include "ns3/log.h"
 
 #include <vector>
 #include <algorithm>
+#include <queue>
 
-NS_LOG_COMPONENT_DEFINE ("MooseHelper");
+NS_LOG_COMPONENT_DEFINE ("LinkLayerHelper");
 
 namespace ns3 {
 
-MooseHelper::MooseHelper(){
+LinkLayerHelper::LinkLayerHelper(){
 	// Sensible defaults.
 
 	// Medium
@@ -51,32 +51,41 @@ MooseHelper::MooseHelper(){
 	routing = true; 	// Simulation based routing
 }
 
-MooseHelper::~MooseHelper(){
+LinkLayerHelper::~LinkLayerHelper(){
 
 }
 
-void MooseHelper::SetMoose(){
-	moose = true;
+bool LinkLayerHelper::SupportsLinkLayer(std::string linkLayer){
+	if(linkLayer == "moose" || linkLayer == "ethernet"){
+		return true;
+	}
+	return false;
 }
 
-void MooseHelper::SetEthernet(){
-	moose = false;
+void LinkLayerHelper::SetLinkLayer(std::string linkLayer){
+	if(linkLayer == "moose"){
+		moose = true;
+	} else if(linkLayer == "ethernet"){
+		moose = false;
+	}
 }
 
-void MooseHelper::EnableDynamicRouting(){
+void LinkLayerHelper::EnableDynamicRouting(){
 	routing = false;
 }	
 
-void MooseHelper::DisableDynamicRouting(){
+void LinkLayerHelper::DisableDynamicRouting(){
 	routing = true;
 }
 
-void MooseHelper::Create(MooseHelper::Network& n){
+LinkLayerHelper::Network LinkLayerHelper::Create(Topology& t){
 
 	// Create the bridges and hosts
 
-	n.bridges.Create(n.t.bridges);
-	n.hosts.Create(n.t.hosts);
+	Network n;
+
+	n.bridges.Create(t.bridges);
+	n.hosts.Create(t.hosts);
 
 	std::map<long, std::map<long, Ptr<NetDevice> > > portMap;
 
@@ -85,17 +94,17 @@ void MooseHelper::Create(MooseHelper::Network& n){
 	// Host-Bridge
 
 	for(
-		Topology::HostLinks::iterator it = n.t.hostLinks.begin(); 
-		it != n.t.hostLinks.end(); 
+		Topology::HostLinks::iterator it = t.hostLinks.begin(); 
+		it != t.hostLinks.end(); 
 		it ++){
 
 		NodeContainer nc;
 		
-		if(it->first >= n.t.hosts){
+		if(it->first >= t.hosts){
 			assert(false);
 		}
 
-		if(it->second >= n.t.bridges){
+		if(it->second >= t.bridges){
 			assert(false);
 		}
 
@@ -111,17 +120,17 @@ void MooseHelper::Create(MooseHelper::Network& n){
 	// Bridge-Bridge 
 
 	for(
-		Topology::BridgeLinks::iterator it = n.t.bridgeLinks.begin(); 
-		it != n.t.bridgeLinks.end(); 
+		Topology::BridgeLinks::iterator it = t.bridgeLinks.begin(); 
+		it != t.bridgeLinks.end(); 
 		it ++){
 
 		NodeContainer nc;
 		
-		if(it->first >= n.t.bridges){
+		if(it->first >= t.bridges){
 			assert(false);
 		}
 
-		if(it->second >= n.t.bridges){
+		if(it->second >= t.bridges){
 			assert(false);
 		}
 
@@ -149,14 +158,14 @@ void MooseHelper::Create(MooseHelper::Network& n){
 
 			// Djkstra - Give all links the same weight for now.
 
-			std::vector<long> weights(n.t.bridgeLinks.size(), 1);
+			std::vector<long> weights(t.bridgeLinks.size(), 1);
 
-			const long num_nodes = n.t.bridges;
+			const long num_nodes = t.bridges;
 
-			graph_t g(n.t.bridgeLinks.begin(), n.t.bridgeLinks.end(), weights.begin(), num_nodes);
+			graph_t g(t.bridgeLinks.begin(), t.bridgeLinks.end(), weights.begin(), num_nodes);
 			boost::property_map<graph_t, boost::edge_weight_t>::type weightmap = get(boost::edge_weight, g);
 
-			for(long root = 0; root < n.t.bridges; root ++){
+			for(long root = 0; root < t.bridges; root ++){
 
 				std::vector<vertex_descriptor> p(num_vertices(g));
 				vertex_descriptor s = boost::vertex(root,g);
@@ -198,7 +207,7 @@ void MooseHelper::Create(MooseHelper::Network& n){
 
 			// Realtime routing
 
-			for(long i = 0; i < n.t.bridges; i ++){
+			for(long i = 0; i < t.bridges; i ++){
 				Ptr<Node> bridgeNode = n.bridges.Get(i);
 				mooseHelper.Install(bridgeNode, n.bridgeDevices[i]);
 			}
@@ -206,30 +215,68 @@ void MooseHelper::Create(MooseHelper::Network& n){
 	} else {
 		if(routing){
 
-			// Kruskall's - Give all links the same weight for now.
+			// STP doesn't do a Minimum Spanning Tree, it does a minimum tree based on the root node.
 
-			const long num_nodes = n.t.bridges;
+			// Since all links are 1, we can do this in a very simple manner
 
-			std::vector<edge_descriptor> tree;
+			// We assume a connected network - possibly incorrectly.
 
-			std::vector<long> weights(n.t.bridgeLinks.size(), 1);
+			Topology::BridgeLinks links(t.bridgeLinks);
+			std::map<unsigned long, std::map<unsigned long, bool> > spanning;
 
-			graph_t g(n.t.bridgeLinks.begin(), n.t.bridgeLinks.end(), weights.begin(), num_nodes);
-			boost::property_map<graph_t, boost::edge_weight_t>::type weightmap = get(boost::edge_weight, g);
+			std::queue<unsigned long> toCheck; // Nodes to check
+			std::map<unsigned long, bool> inTree; // In the tree?
 
-			kruskal_minimum_spanning_tree(g,std::back_inserter(tree));
-
-			std::map<long,std::map<long,bool> > spanning;
-
-			for(long i = 0; i < n.t.bridges; ++i){
-				for(long j = 0; i < n.t.bridges; ++i){
+			for(unsigned long i = 0; i < t.bridges; ++i){
+				inTree[i] = false;
+				for(unsigned long j = 0; j < t.bridges; ++j){
 					spanning[i][j] = false;
 				}
 			}
 
-			for(std::vector<edge_descriptor>::iterator it = tree.begin(); it != tree.end(); ++it){
-				spanning[source(*it,g)][target(*it,g)] = true;
-				spanning[target(*it,g)][source(*it,g)] = true;
+			bool finished = false;
+
+			unsigned long node = 0;
+			unsigned long number = 1;
+
+			while(!finished){
+				Topology::BridgeLinks::iterator it = links.begin();
+				while(it != links.end()){
+
+					if(it->first == node){
+						if(!inTree[it->second]){
+							spanning[node][it->second] = true;
+							spanning[it->second][node] = true;
+							inTree[it->second] = true;
+							toCheck.push(it->second);
+							number++;
+						}
+						Topology::BridgeLinks::iterator er = it;
+						++it;
+						links.erase(er);
+					} else if(it->second == node){
+						if(!inTree[it->first]){
+							spanning[node][it->first] = true;
+							spanning[it->first][node] = true;
+							inTree[it->second] = true;
+							toCheck.push(it->first);
+							number ++;
+						}
+						Topology::BridgeLinks::iterator er = it;
+						++it;
+						links.erase(er);
+					} else {
+						++it;
+					}
+				}
+				if(number == t.bridges){
+					finished = true;
+				} else if(toCheck.size() == 0){
+					finished = true;
+				} else {
+					node = toCheck.front();
+					toCheck.pop();
+				}
 			}
 
 			// Disable the other ports not included.
@@ -238,7 +285,8 @@ void MooseHelper::Create(MooseHelper::Network& n){
 
 			// Question: is bridge[0][1] in spanning tree? -> i.e. is there some x, for which tree[x] = <0,1>
 
-			for(long i = 0; i < n.t.bridges; i ++){
+
+			for(long i = 0; i < t.bridges; i ++){
 
 				std::map<Ptr<NetDevice>, bool> portsEnabled;
 
@@ -255,7 +303,7 @@ void MooseHelper::Create(MooseHelper::Network& n){
 		} else {
 			// Requires STP implementation
 
-			for(long i = 0; i < n.t.bridges; i ++){
+			for(long i = 0; i < t.bridges; i ++){
 
 				Ptr<Node> bridgeNode = n.bridges.Get(i);
 				ethernetHelper.Install(bridgeNode, n.bridgeDevices[i]);
@@ -267,9 +315,11 @@ void MooseHelper::Create(MooseHelper::Network& n){
 
 	internet.Install(n.hosts);
 
-	for(long i = 0; i < n.t.hosts; i ++){
+	for(long i = 0; i < t.hosts; i ++){
 		n.interfaces[i] = ipv4.Assign(n.hostDevices[i]);
 	}
+
+	return n;
 
 }
 

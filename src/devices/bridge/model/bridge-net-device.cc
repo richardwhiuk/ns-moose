@@ -45,8 +45,8 @@ BridgeNetDevice::GetTypeId (void)
                    MakeUintegerChecker<uint16_t> ())    
     .AddAttribute ("StateSize", "The size of the State Table",
                    UintegerValue (8000),
-                   MakeUintegerAccessor (&BridgeNetDevice::SetStateSize,
-                                         &BridgeNetDevice::GetStateSize),
+                   MakeUintegerAccessor (&BridgeNetDevice::SetMaxStateSize,
+                                         &BridgeNetDevice::GetMaxStateSize),
                    MakeUintegerChecker<unsigned long> ())                  
     .AddAttribute ("EnableLearning",
                    "Enable the learning mode of the Learning Bridge",

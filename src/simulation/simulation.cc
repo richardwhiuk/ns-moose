@@ -16,139 +16,196 @@
  * Author: Richard Whitehouse <ns3@richardwhiuk.com>
  */
 
-// Topology
-//
-//       H0                 H1
-//       |		    |
-//  ------------      ------------
-//  | Switch 0 |------| Switch 1 |
-//  ------------      ------------
-//       |                  |
-//  ------------      ------------
-//  | Switch 2 |------| Switch 3 |
-//  ------------      ------------
-//       |		    |
-//       H2		    H3
-//
-// - 100 Mb/s
-// - CBR/UDP flows from Host (h) 0 to Host 1 and then from Host 0 to Host 2
-// - DropTail queues
-
 #include "ns3/simulator-module.h"
 #include "ns3/node-module.h"
 #include "ns3/core-module.h"
 #include "ns3/helper-module.h"
 #include "ns3/bridge-module.h"
+#include "ns3/topology-module.h"
 
 #include <iostream>
+#include <fstream>
 
 using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("MooseSimulation");
 
+void setup(LinkLayerHelper::Network& n, Topology& t, std::istream& file){
+
+	uint16_t port = 9;   // Discard port (RFC 863)
+
+	std::string line;
+
+	std::getline(file, line);
+	if(line != "ns-moose"){
+		throw new std::runtime_error("Invalid Network Data File");
+	}
+
+	unsigned long type;
+	file >> type;
+	if(type != 2){
+		throw new std::runtime_error("Invalid Network Data File Type");
+	}
+
+	unsigned long version;
+	file >> version;
+	if(version != 1){
+		throw new std::runtime_error("Invalid Network Data File Version");
+	}
+
+	std::map<unsigned long, bool> hosts;
+
+	while(file.good() && !file.eof()){
+		double time;
+		unsigned long source;
+		unsigned long destination;
+		unsigned long packets;
+
+		file >> time;
+		file >> source;
+		file >> destination;
+		file >> packets;
+
+		if(file.good()){
+
+			if(source >= t.hosts){
+				throw new std::runtime_error("Invalid Source in Network Data");
+			}
+
+			if(destination >= t.hosts){
+				throw new std::runtime_error("Invalid Destination in Network Data");
+			}
+
+			if(packets == 0){
+				throw new std::runtime_error("Invalid number of packets in Network Data.");
+			}
+
+			hosts[destination] = true;
+
+			UdpClientHelper helper(n.interfaces[destination].GetAddress(0), port);
+			helper.SetAttribute("MaxPackets", UintegerValue(packets));
+			ApplicationContainer app = helper.Install(n.hosts.Get(source));
+			app.Start (Seconds (time));
+
+		}
+	}
+
+	NodeContainer serverNodes;
+	std::map<unsigned long, bool>::iterator it;
+	for(it = hosts.begin(); it != hosts.end(); it ++){
+		serverNodes.Add(n.hosts.Get(it->first));
+	}
+
+	UdpServerHelper udpServerHelper (port);
+	ApplicationContainer udpServers = udpServerHelper.Install (serverNodes);
+	udpServers.Start (Seconds (0.0));
+
+}
+
+
 int main (int argc, char *argv[])
 {
 
-  bool useMoose = true;
-  std::string tracefile = "simulation.tr";
-  long hosts = 1;
+try {
 
-  CommandLine cmd;			// Allow CommandLine args
-  cmd.AddValue("moose", "Use MOOSE instead of Ethernet? [true]", useMoose);
-  cmd.AddValue("trace", "Trace file output [simulation.tr]", tracefile);
-  cmd.AddValue("hosts", "Number of hosts per switch [1]", hosts);
-  cmd.Parse (argc, argv);
+	std::string csmaTraceFile, pcapTraceFile;
+	std::string ipTraceFile;
+	std::string networkFile;
+	std::string dataFile;
+	std::string linkLayer = "moose";
 
-  // Moose Helper
+	CommandLine cmd;			// Allow CommandLine args
+	cmd.AddValue("link", "Link Layer? (moose|ethernet) [moose]", linkLayer);
+	cmd.AddValue("csma", "CSMA Trace File", csmaTraceFile);
+	cmd.AddValue("pcap", "CSMA PCAP Trace File", pcapTraceFile);
+	cmd.AddValue("ip", "IPv4 Trace File", ipTraceFile);
+	cmd.AddValue("network", "Network Topology File", networkFile);
+	cmd.AddValue("data", "Network Data File", dataFile);
+	cmd.Parse (argc, argv);
 
-  MooseHelper moose;
+	std::ifstream networkStream(networkFile.c_str(), std::ifstream::in);
 
-  if(useMoose){
-  	moose.SetMoose();
-  } else {
-	moose.SetEthernet();
-  }
-
-  // Setup Network
-
-  MooseHelper::Network n;
-
-  NS_LOG_INFO ("Configure Topology.");
-
-  n.t.bridges = 4;
-  n.t.hosts = hosts * n.t.bridges;
-
-  // Link hosts to bridges
-
-  long i, j;
-
-  for(i = 0; i < n.t.bridges; ++i){
-     for(j = 0; j < hosts; ++j){
-         n.t.hostLinks[(i*hosts) + j] = i;
-     }
-  }
-
-  // Link the bridges together
- 
-  n.t.bridgeLinks.insert(std::make_pair<long,long>(0,1));
-  n.t.bridgeLinks.insert(std::make_pair<long,long>(0,2));
-  n.t.bridgeLinks.insert(std::make_pair<long,long>(1,3));
-  n.t.bridgeLinks.insert(std::make_pair<long,long>(2,3));
-
-  // Create Network
-
-  moose.Create(n);
-
-
-  //
-  // Create UDP Applications to send the two packets
-  //
-
-  NS_LOG_INFO ("Create Applications.");
-
-  uint16_t port = 9;   // Discard port (RFC 863)
-
-  // 0->1, 0->2, 0->3, 1->0, 1->2, 1->3, 2->0, 2->1, 2->3, 3->0, 3->1, 3->2
-
-  NodeContainer serverNodes;
-
-  for(i = 0; i < n.t.hosts; ++i){
-
-    for(j = 0; j < n.t.hosts; ++j){
-
-	if(i != j){		
-
-  	   UdpClientHelper udpClientHelper (n.interfaces[j].GetAddress(0), port);		// i->j
-  	   udpClientHelper.SetAttribute ("MaxPackets", UintegerValue (1));
-
-  	   ApplicationContainer udpClient = udpClientHelper.Install (n.hosts.Get(i));
-
-           int start = i*4 + j; 
-
-  	   udpClient.Start (Seconds (start));
-  	   udpClient.Stop  (Seconds (start + 1));
+	if(networkStream.fail()){
+		std::ostringstream ss;
+		ss << "Failed to open network data file [" << networkFile << "]";
+		throw new std::runtime_error(ss.str());
 	}
-     }
 
-     serverNodes.Add(n.hosts.Get(i)); 		// Add host i as a server.
+	NS_LOG_INFO ("Create Topology");
 
-  }
+	Topology t(networkStream);
 
-  UdpServerHelper udpServerHelper (port);
-  ApplicationContainer udpServers = udpServerHelper.Install (serverNodes);
-  udpServers.Start (Seconds (0.0));
+	// Link Layer Helper
 
-  // Tracing
+	LinkLayerHelper link;
 
-  NS_LOG_INFO ("Configure Tracing.");
+	if(link.SupportsLinkLayer(linkLayer)){
+		link.SetLinkLayer(linkLayer);
+	} else {
+		std::ostringstream ss;
+		ss << "Unsupported Link Layer Protocol [" << linkLayer << "]";
+		throw new std::runtime_error(ss.str());
+	}
 
-  AsciiTraceHelper ascii;
-  moose.csma.EnableAsciiAll (ascii.CreateFileStream (tracefile));
+	NS_LOG_INFO ("Create Network");
 
-  NS_LOG_INFO ("Run Simulation.");
-  Simulator::Run ();
-  Simulator::Destroy ();
-  NS_LOG_INFO ("Done.");
+	// Setup Network
+
+	LinkLayerHelper::Network n = link.Create(t);
+	
+	// Create UDP Applications to send the two packets
+
+	NS_LOG_INFO ("Create Application");
+
+	std::ifstream dataStream(dataFile.c_str(), std::ifstream::in);
+
+	if(dataStream.fail()){
+		std::ostringstream ss;
+		ss << "Failed to open network data file [" << dataFile << "]";
+		throw new std::runtime_error(ss.str());
+
+	}
+
+	setup(n, t, dataStream);
+
+	// Tracing
+
+	NS_LOG_INFO ("Configure Tracing");
+
+	if(csmaTraceFile != "" || ipTraceFile != ""){
+		AsciiTraceHelper ascii;
+
+		if(csmaTraceFile != ""){
+			Ptr<OutputStreamWrapper> stream = ascii.CreateFileStream (csmaTraceFile);
+			link.csma.EnableAsciiAll(stream);
+		}
+
+		if (ipTraceFile != ""){
+			Ptr<OutputStreamWrapper> stream = ascii.CreateFileStream (ipTraceFile);
+			link.internet.EnableAsciiIpv4All(stream);
+		}
+	}
+
+	if(pcapTraceFile != ""){
+		link.csma.EnablePcapAll(pcapTraceFile, true);
+	}
+
+
+	NS_LOG_INFO ("Run Simulation");
+	Simulator::Run ();
+
+	NS_LOG_INFO ("Destroy Simulation");
+	Simulator::Destroy ();
+
+	NS_LOG_INFO ("Done");
+
+
+} catch(std::runtime_error* e) {
+	std::cerr << e->what() << std::endl;
+	return 1;
+}
+
+return 0;
 
 }
 
