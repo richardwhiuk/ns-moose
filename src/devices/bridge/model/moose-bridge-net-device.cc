@@ -131,7 +131,7 @@ MooseAddress MooseBridgeNetDevice::ToMoose(MooseAddress const& addr){
 
 	 NS_LOG_LOGIC("Allocating New MOOSE Suffix: (" << moose.GetMoosePrefix().GetInt() << "," << moose.GetMooseSuffix().GetInt() << ") for " << addr48);
 
-         m_ethernetState[state.suffix] = &state;
+         m_ethernetState[state.suffix] = &m_suffixState[addr48];
 
      } else {
         SuffixState &state = iter->second;
@@ -160,7 +160,7 @@ MooseAddress MooseBridgeNetDevice::ToMoose(MooseAddress const& addr){
 
 	    NS_LOG_LOGIC("Expired MOOSE Suffix: (" << moose.GetMoosePrefix().GetInt() << "," << moose.GetMooseSuffix().GetInt() << ")");
 
-            m_ethernetState[state.suffix] = &state;
+            m_ethernetState[state.suffix] = &m_suffixState[addr48];
 
         }
      }
