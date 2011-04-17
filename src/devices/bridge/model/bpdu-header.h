@@ -144,6 +144,48 @@ public:
 
 class RstBpduHeader : public Header {
 
+public:
+
+	static TypeId GetTypeId (void);
+	virtual TypeId GetInstanceTypeId (void) const;
+	virtual void Print (std::ostream &os) const;
+	virtual uint32_t GetSerializedSize (void) const;
+	virtual void Serialize (Buffer::Iterator start) const;
+	virtual uint32_t Deserialize (Buffer::Iterator start);
+
+	uint8_t GetFlags();
+	BpduBridgeIdentifier GetRoot();
+	uint32_t GetRootCost();
+	BpduBridgeIdentifier GetBridge();
+	uint32_t GetBridgeCost();
+	uint16_t GetPort();
+	uint16_t GetMessageAge();
+	uint16_t GetMaxAge();
+	uint16_t GetHelloTime();
+	uint16_t GetForwardDelay();
+
+	void SetFlags(uint8_t);
+	void SetRoot(BpduBridgeIdentifier, uint32_t);
+	void SetBridge(BpduBridgeIdentifier, uint32_t);
+	void SetPort(uint16_t);
+	void SetMessageAge(uint16_t);
+	void SetMaxAge(uint16_t);
+	void SetHelloTime(uint16_t);
+	void SetForwardDelay(uint16_t);
+
+private:
+
+	uint8_t m_flags;
+	BpduBridgeIdentifier m_root;
+	uint32_t m_rootPath;
+	BpduBridgeIdentifier m_bridge;
+	uint32_t m_bridgePath;
+	uint16_t m_port;
+	uint16_t m_messageAge;
+	uint16_t m_maxAge;
+	uint16_t m_helloTime;
+	uint16_t m_forwardDelay;
+
 };
 
 }

@@ -13,6 +13,7 @@ def build(bld):
 	'model/bpdu-header.cc',
 	'model/configuration-bpdu-header.cc',
 	'model/tcn-bpdu-header.cc',
+	'model/rst-bpdu-header.cc',
         ]
     headers = bld.new_task_gen('ns3header')
     headers.module = 'bridge'
