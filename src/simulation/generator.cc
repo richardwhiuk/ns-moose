@@ -39,7 +39,7 @@ try {
 
 	CommandLine cmd;			// Allow CommandLine args
 	cmd.AddValue("file", "Output file", file);
-	cmd.AddValue("type", "Network Topology (cube|mesh|torus)", type);
+	cmd.AddValue("type", "Network Topology (cube|mesh|tree|torus)", type);
 	cmd.AddValue("size", "Network size", size);
 	cmd.AddValue("hosts", "Hosts per switch", hosts);
 	cmd.Parse (argc, argv);
@@ -60,6 +60,8 @@ try {
 		t = MeshTopologyHelper::Create(hosts, size);
 	} else if(type == "torus"){
 		t = TorusTopologyHelper::Create(hosts, size);
+	} else if(type == "tree"){
+		t = TreeTopologyHelper::Create(hosts, size);
 	} else {
 		throw new std::runtime_error("Unknown network topology type");
 	} 
