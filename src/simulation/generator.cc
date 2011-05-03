@@ -33,8 +33,8 @@ int main (int argc, char *argv[])
 try {
 
 	std::string type;
-	unsigned long size;
-	unsigned long hosts;
+	unsigned long size = 0;
+	unsigned long hosts = 0;
 	std::string file;
 
 	CommandLine cmd;			// Allow CommandLine args
