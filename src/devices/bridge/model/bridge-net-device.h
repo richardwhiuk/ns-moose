@@ -20,6 +20,7 @@
 #define BRIDGE_NET_DEVICE_H
 
 #include "bridge-port-net-device.h"
+#include "bridge-state.h"
 #include "ns3/net-device.h"
 #include "ns3/mac48-address.h"
 #include "ns3/nstime.h"
@@ -140,22 +141,16 @@ private:
   NetDevice::PromiscReceiveCallback m_promiscRxCallback;
 
   Mac48Address m_address;
-  Time m_expirationTime; // time it takes for learned MAC state to expire
-  struct LearnedState
-  {
-    Ptr<BridgePortNetDevice> associatedPort;
-    Time expirationTime;
-  };
-  std::map<Mac48Address, LearnedState> m_learnState;
   Ptr<Node> m_node;
   Ptr<BridgeChannel> m_channel;
+
+  Ptr<BridgeState> m_state;
 
   std::vector<Ptr<BridgePortNetDevice> > m_ports;
 
   uint16_t mPortNumber;
   uint32_t m_ifIndex;
   uint16_t m_mtu;
-  unsigned long m_maxStateSize;
   bool m_enableLearning;
 
 };

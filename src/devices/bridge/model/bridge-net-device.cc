@@ -43,21 +43,11 @@ BridgeNetDevice::GetTypeId (void)
                    MakeUintegerAccessor (&BridgeNetDevice::SetMtu,
                                          &BridgeNetDevice::GetMtu),
                    MakeUintegerChecker<uint16_t> ())    
-    .AddAttribute ("StateSize", "The size of the State Table",
-                   UintegerValue (8000),
-                   MakeUintegerAccessor (&BridgeNetDevice::SetMaxStateSize,
-                                         &BridgeNetDevice::GetMaxStateSize),
-                   MakeUintegerChecker<unsigned long> ())                  
     .AddAttribute ("EnableLearning",
                    "Enable the learning mode of the Learning Bridge",
                    BooleanValue (true),
                    MakeBooleanAccessor (&BridgeNetDevice::m_enableLearning),
                    MakeBooleanChecker ())
-    .AddAttribute ("ExpirationTime",
-                   "Time it takes for learned MAC state entry to expire.",
-                   TimeValue (Seconds (300)),
-                   MakeTimeAccessor (&BridgeNetDevice::m_expirationTime),
-                   MakeTimeChecker ())
     ;
   return tid;
 }
@@ -69,6 +59,7 @@ BridgeNetDevice::BridgeNetDevice ()
 {
   NS_LOG_FUNCTION_NOARGS ();
   m_channel = CreateObject<BridgeChannel> ();
+  m_state = CreateObject<BridgeState> ();
 }
 
 BridgeNetDevice::~BridgeNetDevice()
@@ -182,12 +173,7 @@ void BridgeNetDevice::Learn (Address const &src, Ptr<BridgePortNetDevice> port)
 
   if (m_enableLearning)
     {
-	std::map<Mac48Address, LearnedState>::iterator it = m_learnState.find(src48);
-	if(it != m_learnState.end() || m_learnState.size() < m_maxStateSize){
-	      LearnedState &state = m_learnState[src48];
-	      state.associatedPort = port;
-      	      state.expirationTime = Simulator::Now () + m_expirationTime;
-	}
+	m_state->Learn(src48, port);
     }
 }
 
@@ -196,21 +182,7 @@ Ptr<BridgePortNetDevice> BridgeNetDevice::GetLearnedState (Mac48Address source)
   NS_LOG_FUNCTION_NOARGS ();
   if (m_enableLearning)
     {
-      Time now = Simulator::Now ();
-      std::map<Mac48Address, LearnedState>::iterator iter =
-        m_learnState.find (source);
-      if (iter != m_learnState.end ())
-        {
-          LearnedState &state = iter->second;
-          if (state.expirationTime > now)
-            {
-              return state.associatedPort;
-            }
-          else
-            {
-              m_learnState.erase (iter);
-            }
-        }
+	return m_state->GetPort(source);
     }
   return NULL;
 }
@@ -313,7 +285,7 @@ bool
 BridgeNetDevice::SetMaxStateSize (const unsigned long maxStateSize )
 {
   NS_LOG_FUNCTION_NOARGS ();
-  m_maxStateSize = maxStateSize ;
+  m_state->SetMaxSize(maxStateSize);
   return true;
 }
 
@@ -321,14 +293,14 @@ unsigned long
 BridgeNetDevice::GetMaxStateSize (void) const
 {
   NS_LOG_FUNCTION_NOARGS ();
-  return m_maxStateSize;
+  return m_state->GetMaxSize();
 }
 
 unsigned long 
 BridgeNetDevice::GetStateSize (void) const
 {
   NS_LOG_FUNCTION_NOARGS ();
-  return m_learnState.size();
+  return m_state->GetSize();
 }
 
 bool 
