@@ -30,6 +30,27 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("MooseSimulation");
 
+void capture_state(std::ostream& file, LinkLayerHelper::Network& n){
+
+	file << "ns-moose" << std::endl; 		// MAGIC
+	file << 3 << std::endl;			// Type
+	file << 1 << std::endl;			// Version
+
+	std::map<long, NetDeviceContainer>::iterator i;
+	NetDeviceContainer::Iterator j;
+
+	Ptr<BridgeNetDevice> bridge;
+
+	for(i = n.bridges.begin(); i != n.bridges.end(); ++i){
+		for(j = i->second.Begin(); j != i->second.End(); ++j){
+			bridge = (*j)->GetObject<BridgeNetDevice>();
+			if(bridge != NULL){
+				file << *bridge << std::endl;
+			}
+		}
+	}
+}
+
 void setup(LinkLayerHelper::Network& n, Topology& t, std::istream& file){
 
 	uint16_t port = 9;   // Discard port (RFC 863)
@@ -112,6 +133,7 @@ try {
 	std::string ipTraceFile;
 	std::string networkFile;
 	std::string dataFile;
+	std::string stateFile;
 	std::string linkLayer = "moose";
 
 	CommandLine cmd;			// Allow CommandLine args
@@ -121,6 +143,7 @@ try {
 	cmd.AddValue("ip", "IPv4 Trace File", ipTraceFile);
 	cmd.AddValue("network", "Network Topology File", networkFile);
 	cmd.AddValue("data", "Network Data File", dataFile);
+	cmd.AddValue("state", "Bridge State File", stateFile);
 	cmd.Parse (argc, argv);
 
 	std::ifstream networkStream(networkFile.c_str(), std::ifstream::in);
@@ -193,6 +216,11 @@ try {
 
 	NS_LOG_INFO ("Run Simulation");
 	Simulator::Run ();
+
+	if(stateFile != ""){
+		std::ofstream stateStream(stateFile.c_str(),  std::ios_base::out | std::ios_base::trunc);
+		capture_state(stateStream, n);
+	}
 
 	NS_LOG_INFO ("Destroy Simulation");
 	Simulator::Destroy ();
