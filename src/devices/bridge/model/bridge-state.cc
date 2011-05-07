@@ -96,6 +96,19 @@ Time BridgeState::GetExpirationTime(){
 	return m_time;
 }
 
+std::ostream& operator<<(std::ostream& file, BridgeState& state){
+	// Output state
+	file << state.m_learnState.size();
+	std::map<Mac48Address, BridgeState::Host>::iterator it;
+	for(it = state.m_learnState.begin(); it != state.m_learnState.end(); ++it){
+		file << std::endl;
+		file << it->first << std::endl;
+		file << it->second.associatedPort << std::endl;
+		file << it->second.expirationTime;
+	}
+	return file;
+}
+
 }
 
 

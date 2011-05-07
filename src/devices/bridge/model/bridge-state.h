@@ -57,7 +57,11 @@ private:
 
 	std::map<Mac48Address, Host> m_learnState;
 
+	friend std::ostream& operator<<(std::ostream&, BridgeState&);
+
 };
+
+std::ostream& operator<<(std::ostream&, BridgeState&);
 
 }
 
