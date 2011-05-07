@@ -3,6 +3,8 @@
 def build(bld):
     obj = bld.create_ns3_module('bridge', ['node'])
     obj.source = [
+	'model/bridge-state.cc',
+	'model/moose-bridge-state.cc',
 	'model/moose-bridge-port-net-device.cc',
 	'model/moose-bridge-net-device.cc',
         'model/bridge-net-device.cc',
@@ -14,6 +16,8 @@ def build(bld):
     headers = bld.new_task_gen('ns3header')
     headers.module = 'bridge'
     headers.source = [
+	'model/bridge-state.h',
+	'model/moose-bridge-state.h',
         'model/moose-bridge-port-net-device.h',
 	'model/moose-bridge-net-device.h',
         'model/bridge-net-device.h',
