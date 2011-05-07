@@ -153,7 +153,11 @@ private:
   uint16_t m_mtu;
   bool m_enableLearning;
 
+  friend std::ostream& operator<<(std::ostream&, BridgeNetDevice&);
+
 };
+
+std::ostream& operator<<(std::ostream&, BridgeNetDevice&);
 
 } // namespace ns3
 

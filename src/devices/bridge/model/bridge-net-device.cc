@@ -450,4 +450,11 @@ Address BridgeNetDevice::GetMulticast (Ipv6Address addr) const
   return Mac48Address::GetMulticast (addr);
 }
 
+std::ostream& operator<<(std::ostream& file, BridgeNetDevice& dev){
+	file << 1 << std::endl;
+	file << dev.m_address << std::endl;
+	file << *(dev.m_state);
+	return file;
+}
+
 } // namespace ns3
