@@ -6,6 +6,7 @@ def build(bld):
 	'model/topology.cc',
 	'helper/cube.cc',
 	'helper/torus.cc',
+	'helper/tree.cc',
 	'helper/mesh.cc'
         ]
     headers = bld.new_task_gen('ns3header')
@@ -14,6 +15,7 @@ def build(bld):
 	'model/topology.h',
 	'helper/cube.h',
 	'helper/torus.h',
+	'helper/tree.h',
 	'helper/mesh.h'
         ]
 

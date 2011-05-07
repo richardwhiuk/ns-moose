@@ -33,13 +33,13 @@ int main (int argc, char *argv[])
 try {
 
 	std::string type;
-	unsigned long size;
-	unsigned long hosts;
+	unsigned long size = 0;
+	unsigned long hosts = 0;
 	std::string file;
 
 	CommandLine cmd;			// Allow CommandLine args
 	cmd.AddValue("file", "Output file", file);
-	cmd.AddValue("type", "Network Topology (cube|mesh|torus)", type);
+	cmd.AddValue("type", "Network Topology (cube|mesh|tree|torus)", type);
 	cmd.AddValue("size", "Network size", size);
 	cmd.AddValue("hosts", "Hosts per switch", hosts);
 	cmd.Parse (argc, argv);
@@ -60,6 +60,8 @@ try {
 		t = MeshTopologyHelper::Create(hosts, size);
 	} else if(type == "torus"){
 		t = TorusTopologyHelper::Create(hosts, size);
+	} else if(type == "tree"){
+		t = TreeTopologyHelper::Create(hosts, size);
 	} else {
 		throw new std::runtime_error("Unknown network topology type");
 	} 

@@ -88,7 +88,7 @@ MooseAddress MooseAddress::Allocate(MoosePrefixAddress prefix){
 
   uint16_t key = prefix.GetInt();
 
-  uint32_t val = ++ids[key];
+  uint32_t val = ids[key]++;
 
   MooseAddress moose;
   moose.m_address[0] = 0 | 0x02;			// MOOSE Address

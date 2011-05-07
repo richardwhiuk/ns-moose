@@ -84,8 +84,8 @@ LinkLayerHelper::Network LinkLayerHelper::Create(Topology& t){
 
 	Network n;
 
-	n.bridges.Create(t.bridges);
-	n.hosts.Create(t.hosts);
+	n.bridgeNodes.Create(t.bridges);
+	n.hostNodes.Create(t.hosts);
 
 	std::map<long, std::map<long, Ptr<NetDevice> > > portMap;
 
@@ -108,8 +108,8 @@ LinkLayerHelper::Network LinkLayerHelper::Create(Topology& t){
 			assert(false);
 		}
 
-		nc.Add(n.hosts.Get(it->first));
-		nc.Add(n.bridges.Get(it->second));
+		nc.Add(n.hostNodes.Get(it->first));
+		nc.Add(n.bridgeNodes.Get(it->second));
 
 		NetDeviceContainer link = csma.Install(nc);
 
@@ -134,8 +134,8 @@ LinkLayerHelper::Network LinkLayerHelper::Create(Topology& t){
 			assert(false);
 		}
 
-		nc.Add(n.bridges.Get(it->first));
-		nc.Add(n.bridges.Get(it->second));
+		nc.Add(n.bridgeNodes.Get(it->first));
+		nc.Add(n.bridgeNodes.Get(it->second));
 
 		NetDeviceContainer link = csma.Install(nc);
 
@@ -198,8 +198,8 @@ LinkLayerHelper::Network LinkLayerHelper::Create(Topology& t){
 
 				// Create the switch
 
-				Ptr<Node> bridgeNode = n.bridges.Get(root);
-				mooseHelper.Install(bridgeNode, n.bridgeDevices[root], MoosePrefixAddress(root), routes);
+				Ptr<Node> bridgeNode = n.bridgeNodes.Get(root);
+				n.bridges[root] = mooseHelper.Install(bridgeNode, n.bridgeDevices[root], MoosePrefixAddress(root), routes);
 
 			}
 
@@ -208,8 +208,8 @@ LinkLayerHelper::Network LinkLayerHelper::Create(Topology& t){
 			// Realtime routing
 
 			for(long i = 0; i < t.bridges; i ++){
-				Ptr<Node> bridgeNode = n.bridges.Get(i);
-				mooseHelper.Install(bridgeNode, n.bridgeDevices[i]);
+				Ptr<Node> bridgeNode = n.bridgeNodes.Get(i);
+				n.bridges[i] = mooseHelper.Install(bridgeNode, n.bridgeDevices[i]);
 			}
 		}
 	} else {
@@ -295,8 +295,8 @@ LinkLayerHelper::Network LinkLayerHelper::Create(Topology& t){
 				}
 
 
-				Ptr<Node> bridgeNode = n.bridges.Get(i);
-				ethernetHelper.Install(bridgeNode, n.bridgeDevices[i], portsEnabled);
+				Ptr<Node> bridgeNode = n.bridgeNodes.Get(i);
+				n.bridges[i] = ethernetHelper.Install(bridgeNode, n.bridgeDevices[i], portsEnabled);
 			}
 			
 		
@@ -305,15 +305,15 @@ LinkLayerHelper::Network LinkLayerHelper::Create(Topology& t){
 
 			for(long i = 0; i < t.bridges; i ++){
 
-				Ptr<Node> bridgeNode = n.bridges.Get(i);
-				ethernetHelper.Install(bridgeNode, n.bridgeDevices[i]);
+				Ptr<Node> bridgeNode = n.bridgeNodes.Get(i);
+				n.bridges[i] = ethernetHelper.Install(bridgeNode, n.bridgeDevices[i]);
 			}
 		}
 	}
 
 	// Setup the internet
 
-	internet.Install(n.hosts);
+	internet.Install(n.hostNodes);
 
 	for(long i = 0; i < t.hosts; i ++){
 		n.interfaces[i] = ipv4.Assign(n.hostDevices[i]);

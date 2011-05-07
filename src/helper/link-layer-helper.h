@@ -57,13 +57,17 @@ public:
 		
 		// Contains all the nodes :-)
 
-		NodeContainer bridges;
-		NodeContainer hosts;
+		NodeContainer bridgeNodes;
+		NodeContainer hostNodes;
 
-		// NetDevices
+		// CSMA NetDevices
 
 		std::map<long, NetDeviceContainer> bridgeDevices;
 		std::map<long, NetDeviceContainer> hostDevices;
+
+		// Bridges
+
+		std::map<long, NetDeviceContainer> bridges;
 
 		// IP Interfaces
 
