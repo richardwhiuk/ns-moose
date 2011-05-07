@@ -19,6 +19,7 @@
 #define MOOSE_BRIDGE_NET_DEVICE_H
 
 #include "bridge-net-device.h"
+#include "moose-bridge-state.h"
 #include "ns3/moose-address.h"
 #include "ns3/moose-prefix-address.h"
 #include "ns3/moose-suffix-address.h"
@@ -58,39 +59,9 @@ protected:
 
 private:
 
-// Need more types of state
-
   MooseAddress m_mooseAddress;
 
-  // Remote Moose State
-
-  struct PrefixState
-  {
-    Ptr<BridgePortNetDevice> associatedPort;
-    Time expirationTime;
-  };  
-
-  // Local Moose State
-
-  struct SuffixState
-  {
-    Mac48Address ethernet;
-    MooseSuffixAddress suffix;
-    Time expirationTime;
-  };  
-
-  struct PortState 
-  {
-    Ptr<BridgePortNetDevice> associatedPort;
-    Time expirationTime;
-  };
- 
-  Time m_expirationTime;
-
-  std::map<MoosePrefixAddress, PrefixState> m_prefixState;
-  std::map<Mac48Address, SuffixState> m_suffixState;
-  std::map<MooseSuffixAddress, SuffixState*> m_ethernetState;
-  std::map<MooseSuffixAddress, PortState> m_portState;
+  Ptr<MooseBridgeState> m_state;
 
 };
 
