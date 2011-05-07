@@ -84,7 +84,7 @@ void setup(LinkLayerHelper::Network& n, Topology& t, std::istream& file){
 
 			UdpClientHelper helper(n.interfaces[destination].GetAddress(0), port);
 			helper.SetAttribute("MaxPackets", UintegerValue(packets));
-			ApplicationContainer app = helper.Install(n.hosts.Get(source));
+			ApplicationContainer app = helper.Install(n.hostNodes.Get(source));
 			app.Start (Seconds (time));
 
 		}
@@ -93,7 +93,7 @@ void setup(LinkLayerHelper::Network& n, Topology& t, std::istream& file){
 	NodeContainer serverNodes;
 	std::map<unsigned long, bool>::iterator it;
 	for(it = hosts.begin(); it != hosts.end(); it ++){
-		serverNodes.Add(n.hosts.Get(it->first));
+		serverNodes.Add(n.hostNodes.Get(it->first));
 	}
 
 	UdpServerHelper udpServerHelper (port);
