@@ -17,12 +17,14 @@ def build(bld):
 	'model/configuration-bpdu-header.cc',
 	'model/tcn-bpdu-header.cc',
 	'model/rst-bpdu-header.cc',
+	'model/rstp-l3-protocol.cc',
         'helper/ethernet-bridge-helper.cc',
         ]
     headers = bld.new_task_gen('ns3header')
     headers.module = 'bridge'
     headers.source = [
 	'model/bpdu-header.h',
+	'model/rstp-l3-protocol.h',
 	'model/ethernet-bridge-state.h',
 	'model/ethernet-bridge-port-net-device.h',
 	'model/ethernet-bridge-net-device.h',
