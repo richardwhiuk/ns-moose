@@ -39,6 +39,14 @@ BridgePortNetDevice::GetTypeId (void)
   return tid;
 }
 
+void BridgePortNetDevice::Send(Ptr<Packet> packet, const Address& source, const Address& dest, uint16_t protocolNumber){
+        NS_LOG_FUNCTION_NOARGS (); 
+        if(m_enabled){
+                NS_LOG_LOGIC("SendingPacket(src=" << source << ", dest=" << dest << ")");
+                m_device->SendFrom(packet->Copy(), source, dest, protocolNumber);
+        }   
+}
+
 
 BridgePortNetDevice::BridgePortNetDevice(Ptr<BridgeNetDevice> bridge, Ptr<NetDevice> device, Ptr<Node> node) : m_bridge(bridge), m_device(device), m_enabled(true){
   NS_LOG_FUNCTION_NOARGS ();
@@ -66,42 +74,9 @@ void BridgePortNetDevice::SetEnabled(bool enabled){
 	m_enabled = enabled;
 }
 
-void BridgePortNetDevice::Send(Ptr<Packet> packet, const Address& source, const Address& dest, uint16_t protocolNumber){
-	NS_LOG_FUNCTION_NOARGS ();
-	if(m_enabled){
-		NS_LOG_LOGIC("SendingPacket(src=" << source << ", dest=" << dest << ")");
-		m_device->SendFrom(packet->Copy(), source, dest, protocolNumber);
-	}
-}
-
-Ptr<NetDevice> BridgePortNetDevice::GetDevice(){
-   return m_device;
-}
-
-/**
- * By moving learning to the port, we can have some ports which learn, and some which don't.
- **/
-
-void
-BridgePortNetDevice::Receive (Ptr<NetDevice> incomingPort, Ptr<const Packet> packet, uint16_t protocol,
-                                    Address const &src, Address const &dst, NetDevice::PacketType packetType)
+Ptr<NetDevice> BridgePortNetDevice::GetDevice()
 {
-  NS_LOG_FUNCTION_NOARGS ();
-
-  if(m_enabled){
-
-  NS_LOG_LOGIC ("UID is " << packet->GetUid ());
-
-  NS_LOG_LOGIC ("LearningBridgeForward (incomingPort=" << incomingPort->GetInstanceTypeId ().GetName ()
-                << ", packet=" << packet << ", protocol="<<protocol
-                << ", src=" << src << ", dst=" << dst << ")");
-
-  m_bridge->Learn(src, this);
-
-  m_bridge->Forward(this, packet, protocol, src, dst, packetType);
-
-  }
-
+	return m_device;
 }
 
 }

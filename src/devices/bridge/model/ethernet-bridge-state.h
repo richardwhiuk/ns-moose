@@ -15,8 +15,9 @@
  *
  * Author: Richard Whitehouse <ns3@richardwhiuk.com>
  */
-#ifndef BRIDGE_STATE_H
-#define BRIDGE_STATE_H
+
+#ifndef ETHERNET_BRIDGE_STATE_H
+#define ETHERNET_BRIDGE_STATE_H
 
 #include "bridge-port-net-device.h"
 #include "ns3/object-factory.h"
@@ -25,13 +26,13 @@
 
 namespace ns3 {
 
-class BridgeState : public Object {
+class EthernetBridgeState : public Object {
 
 public:
 
 	static TypeId GetTypeId (void);
-	BridgeState ();
-	virtual ~BridgeState ();
+	EthernetBridgeState ();
+	virtual ~EthernetBridgeState ();
 
 	unsigned long GetSize();
 
@@ -56,12 +57,12 @@ private:
 	};
 
 	std::map<Mac48Address, Host> m_learnState;
-
-	friend std::ostream& operator<<(std::ostream&, BridgeState&);
+	
+	friend std::ostream& operator<<(std::ostream&, EthernetBridgeState&);
 
 };
 
-std::ostream& operator<<(std::ostream&, BridgeState&);
+std::ostream& operator<<(std::ostream&, EthernetBridgeState&);
 
 }
 

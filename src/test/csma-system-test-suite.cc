@@ -23,7 +23,7 @@
 
 #include "ns3/address.h"
 #include "ns3/application-container.h"
-#include "ns3/bridge-helper.h"
+#include "ns3/ethernet-bridge-helper.h"
 #include "ns3/callback.h"
 #include "ns3/config.h"
 #include "ns3/csma-helper.h"
@@ -116,7 +116,7 @@ CsmaBridgeTestCase::DoRun (void)
 
   // Create the bridge netdevice, which will do the packet switching
   Ptr<Node> switchNode = csmaSwitch.Get (0);
-  BridgeHelper bridge;
+  EthernetBridgeHelper bridge;
   bridge.Install (switchNode, switchDevices);
 
   InternetStackHelper internet;

@@ -15,16 +15,16 @@
  *
  * Author: Richard Whitehouse <ns3@richardwhiuk.com>
  */
-#ifndef BRIDGE_PORT_NET_DEVICE_H
-#define BRIDGE_PORT_NET_DEVICE_H
+#ifndef ETHERNET_BRIDGE_PORT_NET_DEVICE_H
+#define ETHERNET_BRIDGE_PORT_NET_DEVICE_H
 
+#include "bridge-port-net-device.h"
 #include "ns3/net-device.h"
 #include "ns3/mac48-address.h"
 #include "ns3/nstime.h"
 #include <stdint.h>
 #include <string>
 #include <map>
-#include <assert.h>
 
 namespace ns3 {
 
@@ -36,27 +36,21 @@ class BridgeNetDevice;
  * \brief a port on a virtual net device that bridges multiple LAN segments
  */
 
-class BridgePortNetDevice : public Object {
+class EthernetBridgePortNetDevice : public BridgePortNetDevice {
 
 public:
-  BridgePortNetDevice(Ptr<BridgeNetDevice> bridge, Ptr<NetDevice> device, Ptr<Node> node);
-  virtual ~BridgePortNetDevice();
+  EthernetBridgePortNetDevice(Ptr<BridgeNetDevice> bridge, Ptr<NetDevice> device, Ptr<Node> node);
+  virtual ~EthernetBridgePortNetDevice();
 
   static TypeId GetTypeId (void);
-
-  Ptr<NetDevice> GetDevice();
 
   virtual void Send (Ptr<Packet> packet, const Address& src, const Address& dest, uint16_t protocolNumber);
 
   virtual void SetEnabled(bool enabled);
 
 protected:
-  virtual void Receive (Ptr<NetDevice> device, Ptr<const Packet> packet, uint16_t protocol, Address const &source, Address const &destination, NetDevice::PacketType packetType) = 0;
+  virtual void Receive (Ptr<NetDevice> device, Ptr<const Packet> packet, uint16_t protocol, Address const &source, Address const &destination, NetDevice::PacketType packetType);
   
-  Ptr<BridgeNetDevice> m_bridge;
-  Ptr<NetDevice> m_device;
-  bool m_enabled;
-
 };
 
 } // namespace ns3

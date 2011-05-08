@@ -37,17 +37,11 @@ BridgeNetDevice::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::BridgeNetDevice")
     .SetParent<NetDevice> ()
-    .AddConstructor<BridgeNetDevice> ()
     .AddAttribute ("Mtu", "The MAC-level Maximum Transmission Unit",
                    UintegerValue (1500),
                    MakeUintegerAccessor (&BridgeNetDevice::SetMtu,
                                          &BridgeNetDevice::GetMtu),
                    MakeUintegerChecker<uint16_t> ())    
-    .AddAttribute ("EnableLearning",
-                   "Enable the learning mode of the Learning Bridge",
-                   BooleanValue (true),
-                   MakeBooleanAccessor (&BridgeNetDevice::m_enableLearning),
-                   MakeBooleanChecker ())
     ;
   return tid;
 }
@@ -59,7 +53,6 @@ BridgeNetDevice::BridgeNetDevice ()
 {
   NS_LOG_FUNCTION_NOARGS ();
   m_channel = CreateObject<BridgeChannel> ();
-  m_state = CreateObject<BridgeState> ();
 }
 
 BridgeNetDevice::~BridgeNetDevice()
@@ -94,7 +87,7 @@ void BridgeNetDevice::Forward (Ptr<BridgePortNetDevice> port, Ptr<const Packet> 
   switch (packetType)
     {
     case PACKET_HOST:
-      if (dst48 == m_address)
+      if (dst48 == m_macAddress)
         {
           m_rxCallback (this, packet, protocol, src);
         }
@@ -107,7 +100,7 @@ void BridgeNetDevice::Forward (Ptr<BridgePortNetDevice> port, Ptr<const Packet> 
       break;
 
     case PACKET_OTHERHOST:
-      if (dst48 == m_address)
+      if (dst48 == m_macAddress)
         {
           m_rxCallback (this, packet, protocol, src);
         }
@@ -116,36 +109,6 @@ void BridgeNetDevice::Forward (Ptr<BridgePortNetDevice> port, Ptr<const Packet> 
           ForwardUnicast (port, packet, protocol, src48, dst48);
         }
       break;
-    }
-}
-
-void
-BridgeNetDevice::ForwardUnicast (Ptr<BridgePortNetDevice> incomingPort, Ptr<const Packet> packet, uint16_t protocol, Mac48Address src, Mac48Address dst)
-{
-  NS_LOG_FUNCTION_NOARGS ();
-
-  Ptr<BridgePortNetDevice> outPort = GetLearnedState (dst);
-  if (outPort != NULL && outPort != incomingPort)
-    {
-      NS_LOG_LOGIC ("Learning bridge state says to use port `" << outPort->GetInstanceTypeId ().GetName () << "'");
-      outPort->Send (packet->Copy (), src, dst, protocol);
-    }
-  else
-    {
-      NS_LOG_LOGIC ("No learned state: send through all ports");
-      for (std::vector< Ptr<BridgePortNetDevice> >::iterator iter = m_ports.begin ();
-           iter != m_ports.end (); iter++)
-        {
-          Ptr<BridgePortNetDevice> port = *iter;
-          if (port != incomingPort)
-            {
-              NS_LOG_LOGIC ("LearningBridgeForward (" << src << " => " << dst << "): " 
-                            << incomingPort->GetInstanceTypeId ().GetName ()
-                            << " --> " << port->GetInstanceTypeId ().GetName ()
-                            << " (UID " << packet->GetUid () << ").");
-              port->Send (packet->Copy (), src, dst, protocol);
-            }
-        }
     }
 }
 
@@ -163,28 +126,6 @@ BridgeNetDevice::ForwardBroadcast (Ptr<BridgePortNetDevice> incomingPort, Ptr<co
           port->Send(packet->Copy (), src, dst, protocol);
         }
     }
-}
-
-void BridgeNetDevice::Learn (Address const &src, Ptr<BridgePortNetDevice> port)
-{
-  NS_LOG_FUNCTION_NOARGS ();
-
-  Mac48Address src48 = Mac48Address::ConvertFrom (src);
-
-  if (m_enableLearning)
-    {
-	m_state->Learn(src48, port);
-    }
-}
-
-Ptr<BridgePortNetDevice> BridgeNetDevice::GetLearnedState (Mac48Address source)
-{
-  NS_LOG_FUNCTION_NOARGS ();
-  if (m_enableLearning)
-    {
-	return m_state->GetPort(source);
-    }
-  return NULL;
 }
 
 uint32_t
@@ -210,11 +151,11 @@ BridgeNetDevice::AddBridgePort (Ptr<NetDevice> device)
   NS_ASSERT (device != this);
 
 
-  NS_LOG_DEBUG("AddBridgePort(bridge_addr=" << m_address << ", device_address=" << (Mac48Address::ConvertFrom(device->GetAddress())));
+  NS_LOG_DEBUG("AddBridgePort(bridge_addr=" << m_macAddress << ", device_address=" << (Mac48Address::ConvertFrom(device->GetAddress())));
 
-  if (m_address == Mac48Address ())
+  if (m_macAddress == Mac48Address ())
     {
-      m_address = Mac48Address::ConvertFrom (device->GetAddress ());
+      m_macAddress = Mac48Address::ConvertFrom (device->GetAddress ());
     }
 
   Ptr<BridgePortNetDevice> port = CreateBridgePort(this, device, m_node);
@@ -224,11 +165,6 @@ BridgeNetDevice::AddBridgePort (Ptr<NetDevice> device)
 
   return port;
 
-}
-
-Ptr<BridgePortNetDevice>
-BridgeNetDevice::CreateBridgePort(Ptr<BridgeNetDevice> bridge, Ptr<NetDevice> device, Ptr<Node> node){
-	return CreateObject<BridgePortNetDevice>(bridge, device, node);
 }
 
 void 
@@ -256,14 +192,14 @@ void
 BridgeNetDevice::SetAddress (Address address)
 {
   NS_LOG_FUNCTION_NOARGS ();
-  m_address = Mac48Address::ConvertFrom (address);
+  m_macAddress = Mac48Address::ConvertFrom (address);
 }
 
 Address 
 BridgeNetDevice::GetAddress (void) const
 {
   NS_LOG_FUNCTION_NOARGS ();
-  return m_address;
+  return m_macAddress;
 }
 
 bool 
@@ -279,28 +215,6 @@ BridgeNetDevice::GetMtu (void) const
 {
   NS_LOG_FUNCTION_NOARGS ();
   return m_mtu;
-}
-
-bool 
-BridgeNetDevice::SetMaxStateSize (const unsigned long maxStateSize )
-{
-  NS_LOG_FUNCTION_NOARGS ();
-  m_state->SetMaxSize(maxStateSize);
-  return true;
-}
-
-unsigned long 
-BridgeNetDevice::GetMaxStateSize (void) const
-{
-  NS_LOG_FUNCTION_NOARGS ();
-  return m_state->GetMaxSize();
-}
-
-unsigned long 
-BridgeNetDevice::GetStateSize (void) const
-{
-  NS_LOG_FUNCTION_NOARGS ();
-  return m_state->GetSize();
 }
 
 bool 
@@ -366,7 +280,7 @@ bool
 BridgeNetDevice::Send (Ptr<Packet> packet, const Address& dest, uint16_t protocolNumber)
 {
   NS_LOG_FUNCTION_NOARGS ();
-  return SendFrom (packet, m_address, dest, protocolNumber);
+  return SendFrom (packet, m_macAddress, dest, protocolNumber);
 }
 
 bool 
@@ -374,6 +288,8 @@ BridgeNetDevice::SendFrom (Ptr<Packet> packet, const Address& src, const Address
 {
   NS_LOG_FUNCTION_NOARGS ();
   Mac48Address dst = Mac48Address::ConvertFrom (dest); 
+
+  /*
 
   // try to use the learned state if data is unicast
   if (!dst.IsGroup ())
@@ -385,6 +301,8 @@ BridgeNetDevice::SendFrom (Ptr<Packet> packet, const Address& src, const Address
           return true;
         }
     }
+
+  */
 
   // data was not unicast or no state has been learned for that mac
   // address => flood through all ports.
@@ -448,13 +366,6 @@ Address BridgeNetDevice::GetMulticast (Ipv6Address addr) const
 {
   NS_LOG_FUNCTION (this << addr);
   return Mac48Address::GetMulticast (addr);
-}
-
-std::ostream& BridgeNetDevice::Print(std::ostream& file){
-	file << 1 << std::endl;
-	file << m_address << std::endl;
-	file << *m_state;
-	return file;
 }
 
 std::ostream& operator<<(std::ostream& file, BridgeNetDevice& dev){

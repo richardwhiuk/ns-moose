@@ -16,49 +16,49 @@
 * Author: Richard Whitehouse <ns3@richardwhiuk.com>
 */
 
-#include "bridge-state.h"
+#include "ethernet-bridge-state.h"
 #include "ns3/log.h"
 #include "ns3/boolean.h"
 #include "ns3/simulator.h"
 #include "ns3/uinteger.h"
 
-NS_LOG_COMPONENT_DEFINE ("BridgeState");
+NS_LOG_COMPONENT_DEFINE ("EthernetBridgeState");
 
 namespace ns3 {
 
-NS_OBJECT_ENSURE_REGISTERED (BridgeState);
+NS_OBJECT_ENSURE_REGISTERED (EthernetBridgeState);
 
-TypeId BridgeState::GetTypeId (void){
+TypeId EthernetBridgeState::GetTypeId (void){
 
-static TypeId tid = TypeId ("ns3::BridgeState")
+static TypeId tid = TypeId ("ns3::EthernetBridgeState")
 .SetParent<Object> ()
-.AddConstructor<BridgeState> ()
+.AddConstructor<EthernetBridgeState> ()
 .AddAttribute ("ExpirationTime",
 "Time it takes for learned MAC state entry to expire.",
 TimeValue (Seconds (300)),
-MakeTimeAccessor (&BridgeState::m_time),
+MakeTimeAccessor (&EthernetBridgeState::m_time),
 MakeTimeChecker ())
 .AddAttribute ("StateSize", "The size of the State Table",
 UintegerValue (8000),
-MakeUintegerAccessor (&BridgeState::m_max),
+MakeUintegerAccessor (&EthernetBridgeState::m_max),
 MakeUintegerChecker<unsigned long> ())
 ;
 return tid;
 }
 
-unsigned long BridgeState::GetMaxSize() const {
+unsigned long EthernetBridgeState::GetMaxSize() const {
 	return m_max;
 }
 
-BridgeState::BridgeState(){
+EthernetBridgeState::EthernetBridgeState(){
 
 }
 
-BridgeState::~BridgeState(){
+EthernetBridgeState::~EthernetBridgeState(){
 
 }
 
-void BridgeState::Learn(ns3::Mac48Address addr, Ptr<BridgePortNetDevice> port){
+void EthernetBridgeState::Learn(ns3::Mac48Address addr, Ptr<BridgePortNetDevice> port){
 	std::map<Mac48Address, Host>::iterator it = m_learnState.find(addr);
 	if(it != m_learnState.end() || m_learnState.size() < m_max){
 	      Host &state = m_learnState[addr];
@@ -67,11 +67,11 @@ void BridgeState::Learn(ns3::Mac48Address addr, Ptr<BridgePortNetDevice> port){
 	}
 }
 
-void BridgeState::SetMaxSize(unsigned long max){
+void EthernetBridgeState::SetMaxSize(unsigned long max){
 	m_max = max;
 }
 
-Ptr<BridgePortNetDevice> BridgeState::GetPort(ns3::Mac48Address addr){
+Ptr<BridgePortNetDevice> EthernetBridgeState::GetPort(ns3::Mac48Address addr){
 	Time now = Simulator::Now ();
 	std::map<Mac48Address, Host>::iterator iter = m_learnState.find(addr);
 	if (iter != m_learnState.end()){
@@ -84,22 +84,22 @@ Ptr<BridgePortNetDevice> BridgeState::GetPort(ns3::Mac48Address addr){
 	}
 }
 
-unsigned long BridgeState::GetSize(){
+unsigned long EthernetBridgeState::GetSize(){
 	return m_learnState.size();
 }
 
-void BridgeState::SetExpirationTime(Time time){
+void EthernetBridgeState::SetExpirationTime(Time time){
 	m_time = time;
 }
 
-Time BridgeState::GetExpirationTime(){
+Time EthernetBridgeState::GetExpirationTime(){
 	return m_time;
 }
 
-std::ostream& operator<<(std::ostream& file, BridgeState& state){
+std::ostream& operator<<(std::ostream& file, EthernetBridgeState& state){
 	// Output state
 	file << state.m_learnState.size();
-	std::map<Mac48Address, BridgeState::Host>::iterator it;
+	std::map<Mac48Address, EthernetBridgeState::Host>::iterator it;
 	for(it = state.m_learnState.begin(); it != state.m_learnState.end(); ++it){
 		file << std::endl;
 		file << it->first << std::endl;

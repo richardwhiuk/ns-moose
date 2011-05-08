@@ -16,37 +16,37 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "bridge-helper.h"
+#include "ethernet-bridge-helper.h"
 #include "ns3/log.h"
-#include "ns3/bridge-net-device.h"
+#include "ns3/ethernet-bridge-net-device.h"
 #include "ns3/node.h"
 #include "ns3/names.h"
 
-NS_LOG_COMPONENT_DEFINE ("BridgeHelper");
+NS_LOG_COMPONENT_DEFINE ("EthernetBridgeHelper");
 
 namespace ns3 {
 
-BridgeHelper::BridgeHelper ()
+EthernetBridgeHelper::EthernetBridgeHelper ()
 {
   NS_LOG_FUNCTION_NOARGS ();
-  m_deviceFactory.SetTypeId ("ns3::BridgeNetDevice");
+  m_deviceFactory.SetTypeId ("ns3::EthernetBridgeNetDevice");
 }
 
 void 
-BridgeHelper::SetDeviceAttribute (std::string n1, const AttributeValue &v1)
+EthernetBridgeHelper::SetDeviceAttribute (std::string n1, const AttributeValue &v1)
 {
   NS_LOG_FUNCTION_NOARGS ();
   m_deviceFactory.Set (n1, v1);
 }
 
 NetDeviceContainer
-BridgeHelper::Install (Ptr<Node> node, NetDeviceContainer c, std::map<Ptr<NetDevice>, bool> portsEnabled)
+EthernetBridgeHelper::Install (Ptr<Node> node, NetDeviceContainer c, std::map<Ptr<NetDevice>, bool> portsEnabled)
 {
   NS_LOG_FUNCTION_NOARGS ();
   NS_LOG_LOGIC ("**** Install bridge device on node " << node->GetId ());
 
   NetDeviceContainer devs;
-  Ptr<BridgeNetDevice> dev = m_deviceFactory.Create<BridgeNetDevice> ();
+  Ptr<EthernetBridgeNetDevice> dev = m_deviceFactory.Create<EthernetBridgeNetDevice> ();
   devs.Add (dev);
   node->AddDevice (dev);
 
@@ -63,13 +63,13 @@ BridgeHelper::Install (Ptr<Node> node, NetDeviceContainer c, std::map<Ptr<NetDev
 
 
 NetDeviceContainer
-BridgeHelper::Install (Ptr<Node> node, NetDeviceContainer c)
+EthernetBridgeHelper::Install (Ptr<Node> node, NetDeviceContainer c)
 {
   NS_LOG_FUNCTION_NOARGS ();
   NS_LOG_LOGIC ("**** Install bridge device on node " << node->GetId ());
 
   NetDeviceContainer devs;
-  Ptr<BridgeNetDevice> dev = m_deviceFactory.Create<BridgeNetDevice> ();
+  Ptr<EthernetBridgeNetDevice> dev = m_deviceFactory.Create<EthernetBridgeNetDevice> ();
   devs.Add (dev);
   node->AddDevice (dev);
 
@@ -82,7 +82,7 @@ BridgeHelper::Install (Ptr<Node> node, NetDeviceContainer c)
 }
 
 NetDeviceContainer
-BridgeHelper::Install (std::string nodeName, NetDeviceContainer c)
+EthernetBridgeHelper::Install (std::string nodeName, NetDeviceContainer c)
 {
   NS_LOG_FUNCTION_NOARGS ();
   Ptr<Node> node = Names::Find<Node> (nodeName);

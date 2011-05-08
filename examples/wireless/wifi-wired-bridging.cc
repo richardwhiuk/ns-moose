@@ -49,7 +49,7 @@
 #include "ns3/helper-module.h"
 #include "ns3/wifi-module.h"
 #include "ns3/node-module.h"
-#include "ns3/bridge-helper.h"
+#include "ns3/ethernet-bridge-helper.h"
 #include <vector>
 #include <stdint.h>
 #include <sstream>
@@ -108,7 +108,7 @@ int main (int argc, char *argv[])
       Ipv4InterfaceContainer staInterface;
       Ipv4InterfaceContainer apInterface;
       MobilityHelper mobility;
-      BridgeHelper bridge;
+      EthernetBridgeHelper bridge;
       WifiHelper wifi = WifiHelper::Default ();
       NqosWifiMacHelper wifiMac = NqosWifiMacHelper::Default ();
       YansWifiChannelHelper wifiChannel = YansWifiChannelHelper::Default ();
