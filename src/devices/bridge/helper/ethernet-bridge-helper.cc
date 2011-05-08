@@ -42,6 +42,8 @@ EthernetBridgeHelper::SetDeviceAttribute (std::string n1, const AttributeValue &
 NetDeviceContainer
 EthernetBridgeHelper::Install (Ptr<Node> node, NetDeviceContainer c, std::map<Ptr<NetDevice>, bool> portsEnabled)
 {
+  // Static Routing
+
   NS_LOG_FUNCTION_NOARGS ();
   NS_LOG_LOGIC ("**** Install bridge device on node " << node->GetId ());
 
@@ -65,6 +67,8 @@ EthernetBridgeHelper::Install (Ptr<Node> node, NetDeviceContainer c, std::map<Pt
 NetDeviceContainer
 EthernetBridgeHelper::Install (Ptr<Node> node, NetDeviceContainer c)
 {
+  // Static Routing
+
   NS_LOG_FUNCTION_NOARGS ();
   NS_LOG_LOGIC ("**** Install bridge device on node " << node->GetId ());
 
@@ -72,6 +76,11 @@ EthernetBridgeHelper::Install (Ptr<Node> node, NetDeviceContainer c)
   Ptr<EthernetBridgeNetDevice> dev = m_deviceFactory.Create<EthernetBridgeNetDevice> ();
   devs.Add (dev);
   node->AddDevice (dev);
+
+  ObjectFactory factory;
+  factory.SetTypeId ("ns3::RstpL3Protocol");
+  Ptr<Object> protocol = factory.Create<Object>();
+  node->AggregateObject(protocol);
 
   for (NetDeviceContainer::Iterator i = c.Begin (); i != c.End (); ++i)
     {
