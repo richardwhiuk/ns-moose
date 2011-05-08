@@ -17,14 +17,16 @@
  *
  * Author: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  * Author: Gustavo Carneiro <gjc@inescporto.pt>
+ * Author: Richard Whitehouse <ns3@richardwhiuk.com>
  */
-#ifndef BRIDGE_HELPER_H
-#define BRIDGE_HELPER_H
+#ifndef ETHERNET_BRIDGE_HELPER_H
+#define ETHERNET_BRIDGE_HELPER_H
 
 #include "ns3/net-device-container.h"
 #include "ns3/object-factory.h"
 #include <string>
 #include <map>
+#include <assert.h>
 
 namespace ns3 {
 
@@ -34,16 +36,16 @@ class AttributeValue;
 /**
  * \brief Add capability to bridge multiple LAN segments (IEEE 802.1D bridging)
  */
-class BridgeHelper
+class EthernetBridgeHelper
 {
 public:
   /*
-   * Construct a BridgeHelper
+   * Construct a EthernetBridgeHelper
    */
-  BridgeHelper ();
+  EthernetBridgeHelper ();
   /**
-   * Set an attribute on each ns3::BridgeNetDevice created by
-   * BridgeHelper::Install
+   * Set an attribute on each ns3::EthernetBridgeNetDevice created by
+   * EthernetBridgeHelper::Install
    *
    * \param n1 the name of the attribute to set
    * \param v1 the value of the attribute to set
@@ -51,8 +53,8 @@ public:
   void SetDeviceAttribute (std::string n1, const AttributeValue &v1);
 
   /**
-   * This method creates an ns3::BridgeNetDevice with the attributes
-   * configured by BridgeHelper::SetDeviceAttribute, adds the device
+   * This method creates an ns3::EthernetBridgeNetDevice with the attributes
+   * configured by EthernetBridgeHelper::SetDeviceAttribute, adds the device
    * to the node, and attaches the given NetDevices as ports of the
    * bridge.
    *
@@ -65,8 +67,8 @@ public:
   NetDeviceContainer Install (Ptr<Node> node, NetDeviceContainer c, std::map<Ptr<NetDevice>, bool> portsEnabled);
 
   /**
-   * This method creates an ns3::BridgeNetDevice with the attributes
-   * configured by BridgeHelper::SetDeviceAttribute, adds the device
+   * This method creates an ns3::EthernetBridgeNetDevice with the attributes
+   * configured by EthernetBridgeHelper::SetDeviceAttribute, adds the device
    * to the node, and attaches the given NetDevices as ports of the
    * bridge.
    *
@@ -76,8 +78,8 @@ public:
    */
   NetDeviceContainer Install (Ptr<Node> node, NetDeviceContainer c);
   /**
-   * This method creates an ns3::BridgeNetDevice with the attributes
-   * configured by BridgeHelper::SetDeviceAttribute, adds the device
+   * This method creates an ns3::EthernetBridgeNetDevice with the attributes
+   * configured by EthernetBridgeHelper::SetDeviceAttribute, adds the device
    * to the node, and attaches the given NetDevices as ports of the
    * bridge.
    *
@@ -93,4 +95,4 @@ private:
 } // namespace ns3
 
 
-#endif /* BRIDGE_HELPER_H */
+#endif /* ETHERNET_BRIDGE_HELPER_H */

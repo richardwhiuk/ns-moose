@@ -89,7 +89,7 @@ main (int argc, char *argv[])
 
   // Create the bridge netdevice, which will do the packet switching
   Ptr<Node> switchNode = csmaSwitch.Get (0);
-  BridgeHelper bridge;
+  EthernetBridgeHelper bridge;
   bridge.Install (switchNode, switchDevices);
 
   // Add internet stack to the terminals

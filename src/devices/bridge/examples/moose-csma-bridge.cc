@@ -98,11 +98,11 @@ int main (int argc, char *argv[])
 
   // Create the bridge netdevice, which will do the packet switching
   Ptr<Node> switchANode = switchA.Get(0);
-  BridgeHelper bridgeA;
+  EthernetBridgeHelper bridgeA;
   bridgeA.Install (switchANode, switchADevices);
 
   Ptr<Node> switchBNode = switchB.Get(0);
-  BridgeHelper bridgeB;
+  EthernetBridgeHelper bridgeB;
   bridgeB.Install (switchBNode, switchBDevices);
 
   // Setup the terminals as Internet hosts.

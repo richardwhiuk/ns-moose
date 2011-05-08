@@ -139,7 +139,7 @@ main (int argc, char *argv[])
   // bridge lives on the node bridge1 and bridges together the topBridgeDevices
   // which are the three CSMA net devices on the node in the diagram above.
   //
-  BridgeHelper bridge;
+  EthernetBridgeHelper bridge;
   bridge.Install (bridge1, topBridgeDevices);
 
   // Add internet stack to the router nodes

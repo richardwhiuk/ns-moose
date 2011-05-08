@@ -3,7 +3,9 @@
 def build(bld):
     obj = bld.create_ns3_module('bridge', ['node'])
     obj.source = [
-	'model/bridge-state.cc',
+	'model/ethernet-bridge-state.cc',
+	'model/ethernet-bridge-port-net-device.cc',
+	'model/ethernet-bridge-net-device.cc',
 	'model/moose-bridge-state.cc',
 	'model/moose-bridge-port-net-device.cc',
 	'model/moose-bridge-net-device.cc',
@@ -11,17 +13,19 @@ def build(bld):
         'model/bridge-port-net-device.cc',
         'model/bridge-channel.cc',
 	'helper/moose-bridge-helper.cc',
-        'helper/bridge-helper.cc',
 	'model/bpdu-header.cc',
 	'model/configuration-bpdu-header.cc',
 	'model/tcn-bpdu-header.cc',
 	'model/rst-bpdu-header.cc',
+        'helper/ethernet-bridge-helper.cc',
         ]
     headers = bld.new_task_gen('ns3header')
     headers.module = 'bridge'
     headers.source = [
 	'model/bpdu-header.h',
-	'model/bridge-state.h',
+	'model/ethernet-bridge-state.h',
+	'model/ethernet-bridge-port-net-device.h',
+	'model/ethernet-bridge-net-device.h',
 	'model/moose-bridge-state.h',
         'model/moose-bridge-port-net-device.h',
 	'model/moose-bridge-net-device.h',
@@ -29,7 +33,7 @@ def build(bld):
 	'model/bridge-port-net-device.h',
         'model/bridge-channel.h',
 	'helper/moose-bridge-helper.h',
-        'helper/bridge-helper.h',
+        'helper/ethernet-bridge-helper.h',
         ]
 
     if bld.env['ENABLE_EXAMPLES']:

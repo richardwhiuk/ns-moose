@@ -13,60 +13,60 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
+ * Author: Gustavo Carneiro  <gjc@inescporto.pt>
  * Author: Richard Whitehouse <ns3@richardwhiuk.com>
  */
-#ifndef MOOSE_BRIDGE_NET_DEVICE_H
-#define MOOSE_BRIDGE_NET_DEVICE_H
+#ifndef ETHERNET_BRIDGE_NET_DEVICE_H
+#define ETHERNET_BRIDGE_NET_DEVICE_H
 
 #include "bridge-net-device.h"
-#include "moose-bridge-state.h"
-#include "ns3/moose-address.h"
-#include "ns3/moose-prefix-address.h"
-#include "ns3/moose-suffix-address.h"
+#include "ethernet-bridge-port-net-device.h"
+#include "ethernet-bridge-state.h"
+#include "ns3/net-device.h"
+#include "ns3/mac48-address.h"
+#include "ns3/nstime.h"
+#include "ns3/bridge-channel.h"
+#include "ns3/object-factory.h"
+#include <stdint.h>
+#include <string>
+#include <map>
 
 namespace ns3 {
+
+class Node;
 
 /**
  * \ingroup bridge
  * \brief a virtual net device that bridges multiple LAN segments
- * 
- * MOOSE (Multi-Level Origin Organised Scalable Ethernet) Implementation
  */
-class MooseBridgeNetDevice : public BridgeNetDevice
+class EthernetBridgeNetDevice : public BridgeNetDevice
 {
-
 public:
   static TypeId GetTypeId (void);
-  MooseBridgeNetDevice ();
-  virtual ~MooseBridgeNetDevice ();
+  EthernetBridgeNetDevice ();
+  virtual ~EthernetBridgeNetDevice ();
 
-  void Learn(MooseAddress const& addr, Ptr<BridgePortNetDevice> port);
-  Ptr<BridgePortNetDevice> GetLearnedPort(MooseAddress const& addr);
-  MooseAddress ToMoose(MooseAddress const& addr);
-  MooseAddress FromMoose(MooseAddress const& addr);
-
-  void AddRoutes(std::map<MoosePrefixAddress, Ptr<BridgePortNetDevice> > routes);
-
-  void SetMoosePrefixAddress(MoosePrefixAddress const& prefix);
-  MoosePrefixAddress GetMoosePrefixAddress();
-
-  virtual std::ostream& Print(std::ostream&);
+  virtual void Forward (Ptr<BridgePortNetDevice> port, Ptr<const Packet> packet, uint16_t protocol, Address const &src, Address const &dst, PacketType packetType);
+  virtual void Learn (Address const &src, Ptr<BridgePortNetDevice> port);
 
 protected:
-
   virtual void ForwardUnicast (Ptr<BridgePortNetDevice> incomingPort, Ptr<const Packet> packet, uint16_t protocol, Mac48Address src, Mac48Address dst);
   virtual void ForwardBroadcast (Ptr<BridgePortNetDevice> incomingPort, Ptr<const Packet> packet, uint16_t protocol, Mac48Address src, Mac48Address dst);
+  virtual Ptr<BridgePortNetDevice> GetLearnedState (Mac48Address source);
 
   virtual Ptr<BridgePortNetDevice> CreateBridgePort(Ptr<BridgeNetDevice> bridge, Ptr<NetDevice> device, Ptr<Node> node);
 
+  virtual std::ostream& Print(std::ostream&);
+
 private:
+  Ptr<EthernetBridgeState> m_state;
 
-  MooseAddress m_mooseAddress;
-
-  Ptr<MooseBridgeState> m_state;
+  uint16_t mPortNumber;
+  bool m_enableLearning;
 
 };
 
 } // namespace ns3
 
-#endif
+#endif /* ETHERNET_BRIDGE_NET_DEVICE_H */
+

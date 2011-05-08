@@ -25,7 +25,8 @@
 #include "ns3/node.h"
 #include "ns3/moose-bridge-net-device.h"
 #include "ns3/moose-bridge-helper.h"
-#include "ns3/bridge-helper.h"
+#include "ns3/ethernet-bridge-helper.h"
+#include "ns3/ethernet-bridge-net-device.h"
 #include "internet-stack-helper.h"
 #include "ipv4-address-helper.h"
 #include "csma-helper.h"
@@ -78,8 +79,8 @@ public:
 	CsmaHelper csma;
 	Ipv4AddressHelper ipv4;
 	InternetStackHelper internet;
+	EthernetBridgeHelper ethernetHelper;
 	MooseBridgeHelper mooseHelper;
-	BridgeHelper ethernetHelper;
 
 	LinkLayerHelper();
 

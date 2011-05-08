@@ -85,8 +85,11 @@ private:
 	std::map<MooseSuffixAddress, Suffix*> m_sufSuffixState;
 	std::map<MooseSuffixAddress, Port> m_portState;
 
+        friend std::ostream& operator<<(std::ostream&, MooseBridgeState&);
 
 };
+
+std::ostream& operator<<(std::ostream&, MooseBridgeState&);
 
 }
 

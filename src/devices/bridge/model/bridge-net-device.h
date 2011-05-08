@@ -19,8 +19,8 @@
 #ifndef BRIDGE_NET_DEVICE_H
 #define BRIDGE_NET_DEVICE_H
 
-#include "bridge-port-net-device.h"
-#include "bridge-state.h"
+#include "bridge-net-device.h"
+#include "ethernet-bridge-port-net-device.h"
 #include "ns3/net-device.h"
 #include "ns3/mac48-address.h"
 #include "ns3/nstime.h"
@@ -102,10 +102,6 @@ public:
   virtual bool SetMtu (const uint16_t mtu);
   virtual uint16_t GetMtu (void) const;
 
-  virtual bool SetMaxStateSize (const unsigned long maxStateSize );
-  virtual unsigned long GetMaxStateSize (void) const;
-  virtual unsigned long GetStateSize (void) const;
-
   virtual bool IsLinkUp (void) const;
   virtual void AddLinkChangeCallback (Callback<void> callback);
   virtual bool IsBroadcast (void) const;
@@ -125,26 +121,25 @@ public:
   virtual Address GetMulticast (Ipv6Address addr) const;
 
   virtual void Forward (Ptr<BridgePortNetDevice> port, Ptr<const Packet> packet, uint16_t protocol, Address const &src, Address const &dst, PacketType packetType);
-  virtual void Learn (Address const &src, Ptr<BridgePortNetDevice> port);
 
 protected:
   virtual void DoDispose (void);
 
-  virtual void ForwardUnicast (Ptr<BridgePortNetDevice> incomingPort, Ptr<const Packet> packet, uint16_t protocol, Mac48Address src, Mac48Address dst);
+  virtual void ForwardUnicast (Ptr<BridgePortNetDevice> incomingPort, Ptr<const Packet> packet, uint16_t protocol, Mac48Address src, Mac48Address dst) = 0;
   virtual void ForwardBroadcast (Ptr<BridgePortNetDevice> incomingPort, Ptr<const Packet> packet, uint16_t protocol, Mac48Address src, Mac48Address dst);
-  virtual Ptr<BridgePortNetDevice> GetLearnedState (Mac48Address source);
 
-  virtual Ptr<BridgePortNetDevice> CreateBridgePort(Ptr<BridgeNetDevice> bridge, Ptr<NetDevice> device, Ptr<Node> node);
+  virtual Ptr<BridgePortNetDevice> CreateBridgePort(Ptr<BridgeNetDevice> bridge, Ptr<NetDevice> device, Ptr<Node> node) = 0;
+
+  virtual std::ostream& Print(std::ostream&) = 0;
+
+  Mac48Address m_macAddress;
 
 private:
   NetDevice::ReceiveCallback m_rxCallback;
   NetDevice::PromiscReceiveCallback m_promiscRxCallback;
 
-  Mac48Address m_address;
   Ptr<Node> m_node;
   Ptr<BridgeChannel> m_channel;
-
-  Ptr<BridgeState> m_state;
 
   std::vector<Ptr<BridgePortNetDevice> > m_ports;
 
