@@ -33,8 +33,6 @@ namespace ns3 {
 class Node;
 class AttributeValue;
 
-class BridgeHelper { public: BridgeHelper(){ assert(false); } void Install(ns3::Ptr<ns3::Node>, ns3::NetDeviceContainer){ assert(false); } };
-
 /**
  * \brief Add capability to bridge multiple LAN segments (IEEE 802.1D bridging)
  */
