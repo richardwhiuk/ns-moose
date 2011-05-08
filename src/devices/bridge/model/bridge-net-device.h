@@ -136,6 +136,8 @@ protected:
 
   virtual Ptr<BridgePortNetDevice> CreateBridgePort(Ptr<BridgeNetDevice> bridge, Ptr<NetDevice> device, Ptr<Node> node);
 
+  virtual std::ostream& Print(std::ostream&);
+
 private:
   NetDevice::ReceiveCallback m_rxCallback;
   NetDevice::PromiscReceiveCallback m_promiscRxCallback;

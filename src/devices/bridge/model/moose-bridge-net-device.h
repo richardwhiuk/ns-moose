@@ -50,6 +50,8 @@ public:
   void SetMoosePrefixAddress(MoosePrefixAddress const& prefix);
   MoosePrefixAddress GetMoosePrefixAddress();
 
+  virtual std::ostream& Print(std::ostream&);
+
 protected:
 
   virtual void ForwardUnicast (Ptr<BridgePortNetDevice> incomingPort, Ptr<const Packet> packet, uint16_t protocol, Mac48Address src, Mac48Address dst);

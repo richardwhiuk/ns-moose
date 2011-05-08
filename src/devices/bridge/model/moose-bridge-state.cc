@@ -209,5 +209,27 @@ unsigned long MooseBridgeState::GetSize(){
 	return m_prefixState.size() + m_portState.size();
 }
 
+std::ostream& operator<<(std::ostream& file, MooseBridgeState& state){
+	file << state.m_prefixState.size() << std::endl;
+
+	for(std::map<MoosePrefixAddress, MooseBridgeState::Prefix>::iterator iter = state.m_prefixState.begin(); iter != state.m_prefixState.end(); ++iter){
+		file << iter->first.GetInt() << std::endl << iter->second.port << std::endl << iter->second.time << std::endl;
+	}
+
+	file << state.m_ethSuffixState.size() << std::endl;
+
+	for(std::map<Mac48Address, MooseBridgeState::Suffix>::iterator iter = state.m_ethSuffixState.begin(); iter != state.m_ethSuffixState.end(); ++iter){
+		file << iter->first << std::endl << iter->second.suffix.GetInt() << std::endl << iter->second.time << std::endl;
+	}
+	
+	file << state.m_portState.size();
+
+	for(std::map<MooseSuffixAddress, MooseBridgeState::Port>::iterator iter = state.m_portState.begin(); iter != state.m_portState.end(); ++iter){
+		file << std::endl << iter->first.GetInt() << std::endl << iter->second.port << std::endl << iter->second.time;
+	}
+
+
+}
+
 }
 
