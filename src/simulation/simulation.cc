@@ -135,6 +135,7 @@ try {
 	std::string dataFile;
 	std::string stateFile;
 	std::string linkLayer = "moose";
+	std::string routing = "static";
 
 	CommandLine cmd;			// Allow CommandLine args
 	cmd.AddValue("link", "Link Layer? (moose|ethernet) [moose]", linkLayer);
@@ -144,6 +145,7 @@ try {
 	cmd.AddValue("network", "Network Topology File", networkFile);
 	cmd.AddValue("data", "Network Data File", dataFile);
 	cmd.AddValue("state", "Bridge State File", stateFile);
+	cmd.AddValue("routing", "Dynamic Routing? (static|dynamic) [static]", routing);
 	cmd.Parse (argc, argv);
 
 	std::ifstream networkStream(networkFile.c_str(), std::ifstream::in);
@@ -168,6 +170,16 @@ try {
 		std::ostringstream ss;
 		ss << "Unsupported Link Layer Protocol [" << linkLayer << "]";
 		throw new std::runtime_error(ss.str());
+	}
+
+	if(routing == "dynamic"){
+		link.EnableDynamicRouting();
+	} else if(routing == "static"){
+		link.DisableDynamicRouting();
+	} else {
+		std::ostringstream ss;
+		ss << "Unsupported Routing Type [" << routing << "]";
+		throw new std::runtime_error(routing);
 	}
 
 	NS_LOG_INFO ("Create Network");
