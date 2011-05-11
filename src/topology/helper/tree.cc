@@ -25,25 +25,36 @@ NS_LOG_COMPONENT_DEFINE ("TreeTopologyHelper");
 
 namespace ns3 {
 
-Topology TreeTopologyHelper::Create(long hosts, long size){
+Topology TreeTopologyHelper::Create(long hosts, long branch, long depth){
 
 	Topology t;
 
-	t.bridges = size + 1;
+	long level = 1;
+	long bridges = 1;
 
-	t.hosts = size * hosts;
+	t.bridges = 0;
 
-	long i; long j; long k;
+	while(level < depth){
 
-	for(i = 0; i < size; ++i){
-		for(j = 0; j < hosts; ++j){
-			t.hostLinks[(i*hosts) + j] = i + 1;
+		for(long i = 0; i < bridges; ++i){
+			for(long j = 0; j < branch; ++j){
+				t.bridgeLinks.insert(std::make_pair<long,long>( t.bridges + i , t.bridges + bridges + i*bridges + j ));
+			}
+		}
+
+		t.bridges += bridges;
+		level ++;
+		bridges = bridges * branch;
+	}
+
+	for(long k = 0; k < bridges; ++k){
+		for(long l = 0; l < hosts; ++l){
+			t.hostLinks[(k*hosts) + l] = t.bridges + k;
 		}
 	}
 
-	for(i = 0; i < size; ++i){
-		t.bridgeLinks.insert(std::make_pair<long,long>(0,i+1));
-	}
+	t.bridges += bridges;
+	t.hosts = bridges * hosts;
 
 	return t;
 

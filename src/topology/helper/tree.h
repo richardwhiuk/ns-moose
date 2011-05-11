@@ -29,7 +29,7 @@ class TreeTopologyHelper {
 	
 public:
 
-	Topology static Create(long hosts, long size);	
+	Topology static Create(long hosts, long width, long depth);	
 
 };
 

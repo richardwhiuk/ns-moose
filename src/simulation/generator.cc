@@ -27,13 +27,24 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("MooseGenerator");
 
+std::vector<unsigned int> &split(std::string ints, char delim, std::vector<unsigned int> &elems){
+	std::istringstream ss(ints);
+	std::string item; unsigned int i;
+	while(std::getline(ss, item, delim)){
+		std::istringstream is(item);
+		is >> i;
+		elems.push_back(i);
+	}
+	return elems;
+}
+
 int main (int argc, char *argv[])
 {
 
 try {
 
 	std::string type;
-	unsigned long size = 0;
+	std::string size;
 	unsigned long hosts = 0;
 	std::string file;
 
@@ -50,18 +61,21 @@ try {
 		throw new std::runtime_error("Invalid number of hosts");
 	}
 
-	if(size < 2){
-		throw new std::runtime_error("Invalid network size");
-	}
+	std::vector<unsigned int> sizes;
+	split(size, ',', sizes);
 
 	if(type == "cube"){
-		t = CubeTopologyHelper::Create(hosts, size);
+		if(sizes.size() != 1) throw new std::runtime_error("Invalid size of network");
+		t = CubeTopologyHelper::Create(hosts, sizes[0]);
 	} else if(type == "mesh"){
-		t = MeshTopologyHelper::Create(hosts, size);
+		if(sizes.size() != 1) throw new std::runtime_error("Invalid size of network");
+		t = MeshTopologyHelper::Create(hosts, sizes[0]);
 	} else if(type == "torus"){
-		t = TorusTopologyHelper::Create(hosts, size);
+		if(sizes.size() != 1) throw new std::runtime_error("Invalid size of network");
+		t = TorusTopologyHelper::Create(hosts, sizes[0]);
 	} else if(type == "tree"){
-		t = TreeTopologyHelper::Create(hosts, size);
+		if(sizes.size() != 2) throw new std::runtime_error("Invalid size of network");
+		t = TreeTopologyHelper::Create(hosts, sizes[0], sizes[1]);
 	} else {
 		throw new std::runtime_error("Unknown network topology type");
 	} 
