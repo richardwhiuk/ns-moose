@@ -69,7 +69,7 @@ SeqTsHeader::GetInstanceTypeId (void) const
 void 
 SeqTsHeader::Print (std::ostream &os) const
 {
-  os << "(seq=" << m_seq << " time=" << TimeStep (m_ts).GetSeconds () << ")";
+  os << "seq=" << m_seq << " time=" << TimeStep (m_ts).GetSeconds ();
 }
 uint32_t 
 SeqTsHeader::GetSerializedSize (void) const
