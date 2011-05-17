@@ -210,6 +210,7 @@ void MooseBridgeNetDevice::ForwardBroadcast (Ptr<BridgePortNetDevice> incomingPo
 
 std::ostream& MooseBridgeNetDevice::Print(std::ostream& file){
         file << 2 << std::endl;
+	file << m_macAddress << std::endl;
         file << m_mooseAddress << std::endl;
         file << *m_state;
         return file;
