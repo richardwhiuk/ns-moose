@@ -4,17 +4,22 @@ def build(bld):
 
     mod = bld.create_ns3_module('simulation')
     mod.source = [
+	'model/analysis.cc',
         ]
 
     headers = bld.new_task_gen('ns3header')
     headers.module = 'simulation'
-    headers.source = []	
+    headers.source = [
+	'model/analysis.h',
+	]
 
+    obj = bld.create_ns3_program('analysis', ['bridge', 'topology','simulation'])
+
+    obj.source = 'analysis.cc'
 
     obj = bld.create_ns3_program('generator', ['bridge', 'internet-stack'])
 
     obj.source = 'generator.cc'
-
 
     obj = bld.create_ns3_program('simulation', ['bridge', 'internet-stack'])
 
