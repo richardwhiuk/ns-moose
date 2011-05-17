@@ -37,7 +37,7 @@ LinkLayerHelper::LinkLayerHelper(){
 	// Medium
 
 	csma.SetChannelAttribute ("DataRate", DataRateValue (DataRate("1Gbps")));
-	csma.SetChannelAttribute ("Delay", TimeValue (MilliSeconds (2)));
+	csma.SetChannelAttribute ("Delay", TimeValue (NanoSeconds (20)));
 
 	// Internet
 
