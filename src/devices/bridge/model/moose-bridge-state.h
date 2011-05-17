@@ -70,10 +70,6 @@ private:
 	struct Suffix {
 		Mac48Address ethernet;
 		MooseSuffixAddress suffix;
-		Time time;
-	};
-
-	struct Port {
 		Ptr<BridgePortNetDevice> port;
 		Time time;
 	};
@@ -83,7 +79,6 @@ private:
 	std::map<MoosePrefixAddress, Prefix> m_prefixState;
 	std::map<Mac48Address, Suffix> m_ethSuffixState;
 	std::map<MooseSuffixAddress, Suffix*> m_sufSuffixState;
-	std::map<MooseSuffixAddress, Port> m_portState;
 
         friend std::ostream& operator<<(std::ostream&, MooseBridgeState&);
 

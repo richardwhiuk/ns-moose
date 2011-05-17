@@ -70,11 +70,11 @@ void MooseBridgeState::Learn(MooseSuffixAddress addr, Ptr<BridgePortNetDevice> p
 	
 	Time now = Simulator::Now ();
 	
-	Port &state = m_portState[addr];
+	Suffix *state = m_sufSuffixState[addr];
 	// Only update if the expiration is not in the future
-	if(now + m_time > state.time){
-		state.port = port;
-		state.time = now + m_time;
+	if(now + m_time > state->time){
+		state->port = port;
+		state->time = now + m_time;
 	}
 
 }
@@ -127,6 +127,7 @@ MooseSuffixAddress MooseBridgeState::GetSuffix(Mac48Address addr, MoosePrefixAdd
 		state.ethernet = addr;
 		state.suffix = moose.GetMooseSuffix();
 		state.time = now + m_time;
+		state.port = NULL;
 		NS_LOG_LOGIC("Allocating New MOOSE Suffix: (" << moose.GetMoosePrefix().GetInt() << "," << moose.GetMooseSuffix().GetInt() << ") for " << addr);
 		m_sufSuffixState[state.suffix] = &m_ethSuffixState[addr];
 
@@ -163,6 +164,7 @@ MooseSuffixAddress MooseBridgeState::GetSuffix(Mac48Address addr, MoosePrefixAdd
 			state.ethernet = addr;
 			state.suffix = moose.GetMooseSuffix();
 			state.time = now + m_time;
+			state.port = NULL;
 
 			NS_LOG_LOGIC("Expired MOOSE Suffix: (" << prefix.GetInt() << "," << state.suffix.GetInt() << ")");
 
@@ -194,11 +196,11 @@ Ptr<BridgePortNetDevice> MooseBridgeState::GetPort(MooseSuffixAddress addr){
 
 	Time now = Simulator::Now();
 
-	std::map<MooseSuffixAddress, Port>::iterator iter = m_portState.find(addr);
+	std::map<MooseSuffixAddress, Suffix*>::iterator iter = m_sufSuffixState.find(addr);
 
-	if(iter != m_portState.end() && iter->second.time > now){
+	if(iter != m_sufSuffixState.end() && iter->second->time > now){
 
-		return iter->second.port;
+		return iter->second->port;
 	}
 
 	return NULL;
@@ -206,7 +208,7 @@ Ptr<BridgePortNetDevice> MooseBridgeState::GetPort(MooseSuffixAddress addr){
 }
 
 unsigned long MooseBridgeState::GetSize(){
-	return m_prefixState.size() + m_portState.size();
+	return m_prefixState.size() + m_sufSuffixState.size();
 }
 
 std::ostream& operator<<(std::ostream& file, MooseBridgeState& state){
@@ -216,18 +218,11 @@ std::ostream& operator<<(std::ostream& file, MooseBridgeState& state){
 		file << iter->first.GetInt() << std::endl << iter->second.port << std::endl << iter->second.time << std::endl;
 	}
 
-	file << state.m_ethSuffixState.size() << std::endl;
+	file << state.m_ethSuffixState.size();
 
 	for(std::map<Mac48Address, MooseBridgeState::Suffix>::iterator iter = state.m_ethSuffixState.begin(); iter != state.m_ethSuffixState.end(); ++iter){
-		file << iter->first << std::endl << iter->second.suffix.GetInt() << std::endl << iter->second.time << std::endl;
+		file << std::endl << iter->first << std::endl << iter->second.suffix.GetInt() << std::endl << iter->second.port << iter->second.time;
 	}
-	
-	file << state.m_portState.size();
-
-	for(std::map<MooseSuffixAddress, MooseBridgeState::Port>::iterator iter = state.m_portState.begin(); iter != state.m_portState.end(); ++iter){
-		file << std::endl << iter->first.GetInt() << std::endl << iter->second.port << std::endl << iter->second.time;
-	}
-
 
 }
 
