@@ -120,7 +120,7 @@ void Analysis::analyseCsma(){
 			}		
 		} else {
 			mit = it->packet.begin(); ++mit;
-			std::cout << mit->first << std::endl;
+			std::cerr << mit->first << std::endl;
 			assert(false);
 		}
 
@@ -149,19 +149,18 @@ void Analysis::analyseCsma(){
 		} else if(it->type == "r"){
 			++(total.received);
 		} else {
-			std::cout << it->type << std::endl;
+			std::cerr << it->type << std::endl;
 			assert(false);
 		}
 	}
 
-	std::cout << "ARP +: " << arp.added << " -: " << arp.removed << " r: " << arp.received << std::endl;
-	std::cout << "UDP +: " << udp.added << " -: " << udp.removed << " r: " << udp.received << std::endl;
+	output << "ARP +: " << arp.added << " -: " << arp.removed << " r: " << arp.received << std::endl;
+	output << "UDP +: " << udp.added << " -: " << udp.removed << " r: " << udp.received << std::endl;
 
-	std::cout << "UCa +: " << unicast.added << " -: " << unicast.removed << " r: " << unicast.received << std::endl;
-	std::cout << "BCa +: " << broadcast.added << " -: " << broadcast.removed << " r: " << broadcast.received << std::endl;
+	output << "UCa +: " << unicast.added << " -: " << unicast.removed << " r: " << unicast.received << std::endl;
+	output << "BCa +: " << broadcast.added << " -: " << broadcast.removed << " r: " << broadcast.received << std::endl;
 
-	std::cout << "Total +: " << total.added << " -: " << total.removed << " r: " << total.received << std::endl;
-	
+	output << "Total +: " << total.added << " -: " << total.removed << " r: " << total.received << std::endl;
 
 	//std::vector<std::pair<std::string, std::string> >::iterator hit;
 
