@@ -221,7 +221,7 @@ std::ostream& operator<<(std::ostream& file, MooseBridgeState& state){
 	file << state.m_ethSuffixState.size();
 
 	for(std::map<Mac48Address, MooseBridgeState::Suffix>::iterator iter = state.m_ethSuffixState.begin(); iter != state.m_ethSuffixState.end(); ++iter){
-		file << std::endl << iter->first << std::endl << iter->second.suffix.GetInt() << std::endl << iter->second.port << iter->second.time;
+		file << std::endl << iter->first << std::endl << iter->second.suffix.GetInt() << std::endl << iter->second.port << std::endl << iter->second.time;
 	}
 
 }
