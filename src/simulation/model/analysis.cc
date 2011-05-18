@@ -93,31 +93,40 @@ void Analysis::parseCsma(){
 	}
 }
 
+void Analysis::analyseCsmaType(csmaParse& parse, csmaAnalysis& analysis){
+	if(parse.type == "+"){
+		++(analysis.added);
+	} else if(parse.type == "-"){
+		++(analysis.removed);
+	} else if(parse.type == "r"){
+		++(analysis.received);
+	} else {
+		std::cerr << parse.type << std::endl;
+		assert(false);
+	}
+}
+
 void Analysis::analyseCsma(){
 
 	for(std::vector<csmaParse>::iterator it = traces.begin(); it != traces.end(); ++it){
 		std::map<std::string, std::map<std::string, std::string> >::iterator mit;
 		if((mit = it->packet.find("ns3::ArpHeader")) != it->packet.end()){
-			if(it->type == "+"){
-				++(arp.added);
-			} else if(it->type == "-"){
-				++(arp.removed);
-			} else if(it->type == "r"){
-				++(arp.received);
-			}		
+			if(it->packet["ns3::EthernetHeader"]["destination"] == "ff:ff:ff:ff:ff:ff"){
+				analyseCsmaType(*it, arp.request);
+			} else {
+				analyseCsmaType(*it, arp.response);
+			}
+
+			analyseCsmaType(*it, arp.total);
 
 		} else if(
 				((mit = it->packet.find("ns3::Ipv4Header")) != it->packet.end()) 
 				&& 
 				((mit = it->packet.find("ns3::UdpHeader")) != it->packet.end())
 			) {
-			if(it->type == "+"){
-				++(udp.added);
-			} else if(it->type == "-"){
-				++(udp.removed);
-			} else if(it->type == "r"){
-				++(udp.received);
-			}		
+
+			analyseCsmaType(*it, udp);
+
 		} else {
 			mit = it->packet.begin(); ++mit;
 			std::cerr << mit->first << std::endl;
@@ -125,45 +134,34 @@ void Analysis::analyseCsma(){
 		}
 
 		if(it->packet["ns3::EthernetHeader"]["destination"] == "ff:ff:ff:ff:ff:ff"){
-			if(it->type == "+"){
-				++(broadcast.added);
-			} else if(it->type == "-"){
-				++(broadcast.removed);
-			} else if(it->type == "r"){
-				++(broadcast.received);
-			}		
+			analyseCsmaType(*it, broadcast);
 		} else {
-			if(it->type == "+"){
-				++(unicast.added);
-			} else if(it->type == "-"){
-				++(unicast.removed);
-			} else if(it->type == "r"){
-				++(unicast.received);
-			}		
+			analyseCsmaType(*it, unicast);
 		}
 
-		if(it->type == "+"){
-			++(total.added);
-		} else if(it->type == "-"){
-			++(total.removed);
-		} else if(it->type == "r"){
-			++(total.received);
-		} else {
-			std::cerr << it->type << std::endl;
-			assert(false);
-		}
+		analyseCsmaType(*it, total);
 	}
 
-	output << "ARP +: " << arp.added << " -: " << arp.removed << " r: " << arp.received << std::endl;
-	output << "UDP +: " << udp.added << " -: " << udp.removed << " r: " << udp.received << std::endl;
+	output 	<< "ARP " << std::endl
+		<< "\t Request \t" << arp.request << std::endl
+		<< "\t Response \t" << arp.response << std::endl
+		<< "\t Total \t" << arp.total << std::endl 
+		<< std::endl
+		<< "UDP \t" << udp << std::endl 
+		<< std::endl
+		<< "Unicast \t" << unicast << std::endl
+		<< "Broadcast \t" << broadcast << std::endl
+		<< std::endl
+		<< "Total \t" << total << std::endl
+		<< std::endl;
 
-	output << "UCa +: " << unicast.added << " -: " << unicast.removed << " r: " << unicast.received << std::endl;
-	output << "BCa +: " << broadcast.added << " -: " << broadcast.removed << " r: " << broadcast.received << std::endl;
+}
 
-	output << "Total +: " << total.added << " -: " << total.removed << " r: " << total.received << std::endl;
-
-	//std::vector<std::pair<std::string, std::string> >::iterator hit;
-
+std::ostream& operator<<(std::ostream& file, Analysis::csmaAnalysis& analysis){
+	file 	<< "+: " << analysis.added 
+		<< " -: " << analysis.removed 
+		<< " r: " << analysis.received;
+	return file;
 }
 
 void Analysis::parseCsmaLine(std::string& line){

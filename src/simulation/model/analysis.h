@@ -32,6 +32,11 @@ namespace ns3 {
 
 class Analysis {
 
+private:
+	struct csmaParse;
+	struct csmaAnalysis;
+	struct csmaArpAnalysis;
+
 public:
 
 	Analysis(std::istream& topology, std::istream& data, std::istream& csma, std::istream& state, std::ostream& output, std::ostream& dot, std::ostream& graph, bool moose);
@@ -43,9 +48,11 @@ protected:
 	void analyseCsma();
 	void printCsma();
 	void parseCsma();
-	void parseCsmaLine(std::string& line);
 
 private:
+
+	void analyseCsmaType(csmaParse& parse, csmaAnalysis& analysis);
+	void parseCsmaLine(std::string& line);
 
 	struct csmaParse {
 		std::string type;
@@ -63,9 +70,19 @@ private:
 		long added;
 		long removed;
 		long received;
+
+		friend std::ostream& operator<<(std::ostream&, csmaAnalysis&);
+
 	};
 
-	csmaAnalysis arp;
+	struct csmaArpAnalysis {
+		csmaAnalysis request;
+		csmaAnalysis response;
+		csmaAnalysis total;
+	};
+
+
+	csmaArpAnalysis arp;
 	csmaAnalysis udp;
 	csmaAnalysis total;
 	
@@ -86,7 +103,11 @@ private:
 
 	bool moose;
 
+	friend std::ostream& operator<<(std::ostream&, csmaAnalysis&);
+
 };
+
+std::ostream& operator<<(std::ostream&, Analysis::csmaAnalysis&);
 
 }
 
