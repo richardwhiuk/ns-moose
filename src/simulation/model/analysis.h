@@ -45,9 +45,14 @@ public:
 protected:
 
 	void generateDot();
+
 	void analyseCsma();
+	void analyseState();
+	
 	void printCsma();
+
 	void parseCsma();
+	void parseState();
 
 private:
 
@@ -81,6 +86,38 @@ private:
 		csmaAnalysis total;
 	};
 
+	struct stateParse {
+		std::string mac;
+	};
+
+	struct entryParse {
+		std::string mac;
+		std::string port;
+		std::string time;
+	};
+
+	struct switchParse {
+		std::string prefix;
+		std::string port;
+		std::string time;
+	};
+
+	struct hostParse {
+		std::string mac;
+		std::string suffix;
+		std::string port;
+		std::string time;
+	};
+
+	struct ethStateParse : public stateParse {
+		std::vector<entryParse> entries;
+	};
+
+	struct mooseStateParse : public stateParse {
+		std::string moose;
+		std::vector<hostParse> hosts;
+		std::vector<switchParse> switches;
+	};
 
 	csmaArpAnalysis arp;
 	csmaAnalysis udp;
@@ -88,6 +125,8 @@ private:
 	
 	csmaAnalysis broadcast;
 	csmaAnalysis unicast;
+
+	std::vector<stateParse*> states;
 
 	std::vector<csmaParse> traces;
 

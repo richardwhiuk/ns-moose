@@ -34,7 +34,11 @@ Analysis::Analysis(std::istream& topology, std::istream& data, std::istream& csm
 
 	parseCsma();
 
+	parseState();
+
 	analyseCsma();
+
+	analyseState();
 
 	generateDot();
 
@@ -91,6 +95,126 @@ void Analysis::parseCsma(){
 			parseCsmaLine(line);
 		}
 	}
+}
+
+void Analysis::parseState(){
+	std::string line;
+	long size;
+
+	getline(state, line);
+	assert(line == "ns-moose");	// MAGIC
+	
+	getline(state, line);
+	assert(line == "3");		// TYPE
+	
+	getline(state, line);
+	assert(line == "1");		// VERSION
+	
+	do {
+		getline(state, line);		// LINK TYPE
+	} while(line == "");
+	
+	while(!state.eof()){
+
+		assert( (line == "1" && !moose) || (line == "2" && moose) );
+
+		stateParse *sp;
+
+		if(moose){
+			mooseStateParse *msp = new mooseStateParse;
+
+			getline(state, msp->mac);
+			getline(state, msp->moose);
+
+			getline(state, line);		// Size
+			
+			{
+				std::stringstream sline(line);
+				sline >> size;
+			}
+
+			for(; size > 0; size --){
+				switchParse sp;
+				getline(state, sp.prefix);
+				getline(state, sp.port);
+				getline(state, sp.time);
+				msp->switches.push_back(sp);
+			}
+
+			getline(state, line);		// Size
+			
+			{
+				std::stringstream sline(line);
+				sline >> size;
+			}
+
+
+			for(; size > 0; size --){
+				hostParse hp;
+				getline(state, hp.mac);
+				getline(state, hp.suffix);
+				getline(state, hp.port);
+				getline(state, hp.time);
+				msp->hosts.push_back(hp);
+			}
+
+			sp = msp;
+
+		} else {
+			ethStateParse *esp = new ethStateParse;
+		
+			getline(state, esp->mac);	// MAC
+
+			getline(state, line);		// Size
+
+			{
+				std::stringstream sline(line);
+				sline >> size;
+			}
+
+			for(; size > 0; size --){
+				entryParse ep;
+				getline(state, ep.mac);
+				getline(state, ep.port);
+				getline(state, ep.time);
+				esp->entries.push_back(ep);
+			}
+			
+			sp = esp;
+		}
+
+		states.push_back(sp);
+
+		do {
+			getline(state, line);		// LINK TYPE
+		} while(line == "" && !state.eof());
+	}
+}
+
+void Analysis::analyseState(){
+
+	output << "State Table " << std::endl;
+
+	for(std::vector<stateParse*>::iterator it = states.begin(); it != states.end(); ++it){
+
+		if(moose){
+			mooseStateParse *msp = (mooseStateParse *) *it;
+			output 	<< "\t" << msp->moose << std::endl
+				<< "\t\t Hosts \t" << msp->hosts.size() << std::endl
+				<< "\t\t Switches \t" << msp->switches.size() << std::endl
+				<< "\t\t Total \t" << (msp->hosts.size() + msp->switches.size()) << std::endl
+				<< std::endl;
+		} else {
+			ethStateParse *esp = (ethStateParse *)*it;
+			output 	<< "\t" << esp->mac << std::endl
+				<< "\t\t Entries \t" << esp->entries.size() << std::endl
+				<< std::endl;
+		}
+
+	}
+
+	output << std::endl;
+
 }
 
 void Analysis::analyseCsmaType(csmaParse& parse, csmaAnalysis& analysis){
@@ -163,6 +287,7 @@ std::ostream& operator<<(std::ostream& file, Analysis::csmaAnalysis& analysis){
 		<< " r: " << analysis.received;
 	return file;
 }
+
 
 void Analysis::parseCsmaLine(std::string& line){
 	csmaParse parse;
