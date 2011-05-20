@@ -48,23 +48,6 @@ Analysis::~Analysis(){
 
 }
 
-void Analysis::printCsma(){
-	long i = 0;
-	for(std::vector<csmaParse>::iterator it = traces.begin(); it != traces.end(); ++it, ++i){
-		std::cout << "[" << i << "]" << std::endl;
-		std::cout << '\t' << it->type << std::endl;
-		std::cout << '\t' << it->time << std::endl;
-		std::cout << '\t' << it->node << std::endl;
-		for(std::map<std::string,std::map<std::string,std::string> >::iterator vit = it->packet.begin(); vit != it->packet.end(); ++vit){
-			std::cout << '\t' << vit->first << std::endl;
-			for(std::map<std::string, std::string>::iterator mit = vit->second.begin(); mit != vit->second.end(); ++mit){
-				std::cout << "\t\t" << mit->first << '\t' << mit->second << std::endl; 
-			}
-		}
-	}
-	
-}
-
 void Analysis::generateDot(){
 	dot << "graph G { " << std::endl;
         dot << "node [shape=box, style=filled];" << std::endl;
@@ -224,47 +207,52 @@ void Analysis::analyseCsmaType(csmaParse& parse, csmaAnalysis& analysis){
 		++(analysis.removed);
 	} else if(parse.type == "r"){
 		++(analysis.received);
+	} else if(parse.type == "d"){
+		++(analysis.dropped);
 	} else {
 		std::cerr << parse.type << std::endl;
 		assert(false);
 	}
 }
 
-void Analysis::analyseCsma(){
+void Analysis::analyseCsmaLine(csmaParse& it){
 
-	for(std::vector<csmaParse>::iterator it = traces.begin(); it != traces.end(); ++it){
-		std::map<std::string, std::map<std::string, std::string> >::iterator mit;
-		if((mit = it->packet.find("ns3::ArpHeader")) != it->packet.end()){
-			if(it->packet["ns3::EthernetHeader"]["destination"] == "ff:ff:ff:ff:ff:ff"){
-				analyseCsmaType(*it, arp.request);
-			} else {
-				analyseCsmaType(*it, arp.response);
-			}
+	std::map<std::string, std::map<std::string, std::string> >::iterator mit;
 
-			analyseCsmaType(*it, arp.total);
-
-		} else if(
-				((mit = it->packet.find("ns3::Ipv4Header")) != it->packet.end()) 
-				&& 
-				((mit = it->packet.find("ns3::UdpHeader")) != it->packet.end())
-			) {
-
-			analyseCsmaType(*it, udp);
-
+	if((mit = it.packet.find("ns3::ArpHeader")) != it.packet.end()){
+		if(it.packet["ns3::EthernetHeader"]["destination"] == "ff:ff:ff:ff:ff:ff"){
+			analyseCsmaType(it, arp.request);
 		} else {
-			mit = it->packet.begin(); ++mit;
-			std::cerr << mit->first << std::endl;
-			assert(false);
+			analyseCsmaType(it, arp.response);
 		}
 
-		if(it->packet["ns3::EthernetHeader"]["destination"] == "ff:ff:ff:ff:ff:ff"){
-			analyseCsmaType(*it, broadcast);
-		} else {
-			analyseCsmaType(*it, unicast);
-		}
+		analyseCsmaType(it, arp.total);
 
-		analyseCsmaType(*it, total);
+	} else if(
+			((mit = it.packet.find("ns3::Ipv4Header")) != it.packet.end()) 
+			&& 
+			((mit = it.packet.find("ns3::UdpHeader")) != it.packet.end())
+		) {
+
+		analyseCsmaType(it, udp);
+
+	} else {
+		mit = it.packet.begin(); ++mit;
+		std::cerr << mit->first << std::endl;
+		assert(false);
 	}
+
+	if(it.packet["ns3::EthernetHeader"]["destination"] == "ff:ff:ff:ff:ff:ff"){
+		analyseCsmaType(it, broadcast);
+	} else {
+		analyseCsmaType(it, unicast);
+	}
+
+	analyseCsmaType(it, total);
+
+}
+
+void Analysis::analyseCsma(){
 
 	output 	<< "ARP " << std::endl
 		<< "\t Request \t" << arp.request << std::endl
@@ -284,7 +272,9 @@ void Analysis::analyseCsma(){
 std::ostream& operator<<(std::ostream& file, Analysis::csmaAnalysis& analysis){
 	file 	<< "+: " << analysis.added 
 		<< " -: " << analysis.removed 
-		<< " r: " << analysis.received;
+		<< " r: " << analysis.received
+		<< " d: " << analysis.dropped
+			;
 	return file;
 }
 
@@ -377,7 +367,7 @@ void Analysis::parseCsmaLine(std::string& line){
 
 	}
 	
-	traces.push_back(parse);
+	analyseCsmaLine(parse);
 
 }
 

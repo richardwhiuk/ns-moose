@@ -58,6 +58,7 @@ private:
 
 	void analyseCsmaType(csmaParse& parse, csmaAnalysis& analysis);
 	void parseCsmaLine(std::string& line);
+	void analyseCsmaLine(csmaParse&);
 
 	struct csmaParse {
 		std::string type;
@@ -68,13 +69,14 @@ private:
 
 	struct csmaAnalysis {
 
-		csmaAnalysis() : added(0), removed(0), received(0){
+		csmaAnalysis() : added(0), removed(0), received(0), dropped(0){
 	
 		}
 	
 		long added;
 		long removed;
 		long received;
+		long dropped;
 
 		friend std::ostream& operator<<(std::ostream&, csmaAnalysis&);
 
@@ -127,8 +129,6 @@ private:
 	csmaAnalysis unicast;
 
 	std::vector<stateParse*> states;
-
-	std::vector<csmaParse> traces;
 
 	Topology topology;
 
