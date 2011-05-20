@@ -51,7 +51,7 @@ void capture_state(std::ostream& file, LinkLayerHelper::Network& n){
 	}
 }
 
-void setup(LinkLayerHelper::Network& n, Topology& t, std::istream& file){
+void setup(LinkLayerHelper::Network& n, Topology& t, std::istream& file, bool random){
 
 	uint16_t port = 9;   // Discard port (RFC 863)
 
@@ -106,8 +106,14 @@ void setup(LinkLayerHelper::Network& n, Topology& t, std::istream& file){
 			UdpClientHelper helper(n.interfaces[destination].GetAddress(0), port);
 			helper.SetAttribute("MaxPackets", UintegerValue(packets));
 			ApplicationContainer app = helper.Install(n.hostNodes.Get(source));
-			app.Start (Seconds (time));
 
+			if(random){
+				long ntime = rand() % 1000;
+				Time rtime = Seconds(time) + MilliSeconds(source) + NanoSeconds(ntime);
+				app.Start (rtime);
+			} else {
+				app.Start (Seconds (time));
+			}
 		}
 	}
 
@@ -135,6 +141,7 @@ try {
 	std::string dataFile;
 	std::string stateFile;
 	std::string linkLayer = "moose";
+	std::string randomize = "yes";
 
 	CommandLine cmd;			// Allow CommandLine args
 	cmd.AddValue("link", "Link Layer? (moose|ethernet) [moose]", linkLayer);
@@ -144,6 +151,7 @@ try {
 	cmd.AddValue("network", "Network Topology File", networkFile);
 	cmd.AddValue("data", "Network Data File", dataFile);
 	cmd.AddValue("state", "Bridge State File", stateFile);
+	cmd.AddValue("randomize", "Randomize Start Times", randomize);
 	cmd.Parse (argc, argv);
 
 	std::ifstream networkStream(networkFile.c_str(), std::ifstream::in);
@@ -189,7 +197,17 @@ try {
 
 	}
 
-	setup(n, t, dataStream);
+	bool random;
+
+	if(randomize == "yes"){
+		random = true;
+	} else if(randomize == "no"){
+		random = false;
+	} else {
+		throw new std::runtime_error("Unknown randomize setting.");
+	}
+	
+	setup(n, t, dataStream, random);
 
 	// Tracing
 
